@@ -24,7 +24,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/braintrust_bot_rails@Development__braintrust_bot_rails.rcov" NAME="Development: braintrust-bot-rails Coverage Results" MODIFIED="1525329056323" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="braintrust-bot-rails" />
+    <SUITE FILE_PATH="coverage/braintrust_bot_rails@Development__braintrust_bot_rails.rcov" NAME="Development: braintrust-bot-rails Coverage Results" MODIFIED="1525329402739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="rcov" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" MODULE_NAME="braintrust-bot-rails" />
   </component>
   <component name="FileEditorManager">
     <leaf>
