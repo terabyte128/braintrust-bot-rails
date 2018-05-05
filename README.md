@@ -9,3 +9,32 @@ better understanding of which features were actually useful and how to implement
 
 
 In (semi-)active development, when I have time to work on it. Coming soon (™) to a chat near you!
+
+### Planned Features
+
+**Summons**
+
+- [ ] Send a message to all members of a chat by tagging them all, so they'll be notified even if the chat is mused
+
+**Quotes**
+
+- [ ] Store quotes from a chat (message text, author, sender, context)
+- [ ] Quotes with locations (optional)
+- [ ] Retrive quotes at random
+- [ ] Alexa support
+- [ ] Automatically send quotes once a day with some probability (can be disabled)
+
+**Photos**
+
+- [ ] Store photos from a chat
+- [ ] Support captions
+- [ ] Retrive photos at random
+- [ ] Internal photo backup (as opposed to just being stored on Telegram)
+
+**Magic 8-Ball**
+
+- [ ] Send a command to roll an 8-ball and get back a divine answer from the bot
+
+**Administration**
+
+- [ ] Admin interface for managing quotes, chats, photos, etc.
