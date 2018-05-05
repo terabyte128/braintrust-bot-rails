@@ -14,14 +14,14 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Summons**
 
-- [ ] Send a message to all members of a chat by tagging them all, so they'll be notified even if the chat is mused
+- [ ] Send a message to all members of a chat by tagging them all, so they'll be notified even if the chat is muted
 
 **Quotes**
 
 - [ ] Store quotes from a chat (message text, author, sender, context)
 - [ ] Quotes with locations (optional)
 - [ ] Retrive quotes at random
-- [ ] Alexa support
+- [ ] Alexa support (ask Alexa for a random quote)
 - [ ] Automatically send quotes once a day with some probability (can be disabled)
 
 **Photos**
