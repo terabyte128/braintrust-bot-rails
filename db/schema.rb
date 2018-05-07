@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180505072951) do
+ActiveRecord::Schema.define(version: 20180507070619) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -61,6 +61,7 @@ ActiveRecord::Schema.define(version: 20180505072951) do
     t.datetime "updated_at", null: false
     t.decimal "longitude", precision: 12, scale: 7
     t.decimal "latitude", precision: 12, scale: 7
+    t.boolean "location_confirmed", default: false
     t.index ["chat_id"], name: "index_quotes_on_chat_id"
   end
 

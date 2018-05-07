@@ -18,9 +18,9 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Quotes**
 
-- [ ] Store quotes from a chat (message text, author, sender, context)
-- [ ] Quotes with locations (optional)
-- [ ] Retrive quotes at random
+- [X] Store quotes from a chat (message text, author, sender, context)
+- [X] Quotes with locations (optional)
+- [X] Retrive quotes at random
 - [ ] Alexa support (ask Alexa for a random quote)
 - [ ] Automatically send quotes once a day with some probability (can be disabled)
 - [ ] Automatic quote generation based on Markov chains and all quotes collected from a single user
@@ -38,4 +38,4 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Administration**
 
-- [ ] Admin interface for managing quotes, chats, photos, etc.
+- [X] Admin interface for managing quotes, chats, photos, etc.
