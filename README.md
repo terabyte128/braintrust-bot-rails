@@ -14,7 +14,7 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Summons**
 
-- [ ] Send a message to all members of a chat by tagging them all, so they'll be notified even if the chat is muted
+- [X] Send a message to all members of a chat by tagging them all, so they'll be notified even if the chat is muted
 
 **Quotes**
 
@@ -22,7 +22,7 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 - [X] Quotes with locations (optional)
 - [X] Retrive quotes at random
 - [ ] Alexa support (ask Alexa for a random quote)
-- [ ] Automatically send quotes once a day with some probability (can be disabled)
+- [X] Automatically send quotes once a day with some probability (can be disabled)
 - [ ] Automatic quote generation based on Markov chains and all quotes collected from a single user
 
 **Photos**
@@ -34,7 +34,7 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Magic 8-Ball**
 
-- [ ] Send a command to roll an 8-ball and get back a divine answer from the bot
+- [X] Send a command to roll an 8-ball and get back a divine answer from the bot
 
 **Administration**
 
