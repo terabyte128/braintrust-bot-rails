@@ -1,4 +1,4 @@
-# BrainTrust Bot: Rails
+# BrainTrust Bot: On Rails
 
 A re-write of the original [BrainTrust Bot](https://github.com/terabyte128/braintrust-bot), but with Ruby on Rails and better planning. 
 The original bot has served its purpose well for multiple years, but it's time to start on something built from the ground-up. 
