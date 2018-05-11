@@ -5,7 +5,24 @@ class BotController < Telegram::Bot::UpdatesController
 
   before_action :find_or_create_chat
 
+  BotController.session_store = :file_store, Rails.root.join('tmp', 'session_store')
+
+  use_session!
+
   def message(update)
+
+    if update.key?('photo')
+      photo_sizes = update['photo']
+
+      # pick the largest photo of all sent
+      largest_photo = photo_sizes.reduce do |acc, photo|
+        acc['file_size'] > photo['file_size'] ? acc : photo
+      end
+
+      # cache the photo ID in case they want to save it
+      session[:photo] = largest_photo['file_id']
+    end
+
     # handle messages that begin with the bot's username specially
     if update.key?('text') && update['text'].downcase.starts_with?("@" + Telegram.bot.username.downcase)
       # pluck out the text from the update, cut out the @botusername part,
@@ -14,12 +31,12 @@ class BotController < Telegram::Bot::UpdatesController
       return
     end
 
-    # get the latest quote sent by this sender in this chat
-    latest_quote = @chat.quotes.order(created_at: :desc).where(sender: from['username']).first
-
     # if there's a location in the update and the sender's latest quote does not have a confirmed location
     # then add the longitude and latitude to their location (for Gwen)
-    if update['message'].key? 'location'
+    if update.key?('message') && update['message'].key?('location')
+      # get the latest quote sent by this sender in this chat
+      latest_quote = @chat.quotes.order(created_at: :desc).where(sender: from['username']).first
+
       unless latest_quote.location_confirmed
         location = update['message']['location']
 
@@ -27,10 +44,51 @@ class BotController < Telegram::Bot::UpdatesController
         latest_quote.latitude = location['latitude']
         respond_with :message, text: '🗺 A location was added to your latest quote!'
       end
-    end
 
-    latest_quote.location_confirmed = true
-    latest_quote.save
+      latest_quote.location_confirmed = true
+      latest_quote.save
+    end
+  end
+
+  # send a photo to the chat
+  # uses the :photo key in the session store -- if it's not there, then they didn't send a photo
+  # *args is an optional caption
+  def sendphoto(*args)
+    if session.key? :photo
+      new_photo = @chat.photos.new sender: from['username'], telegram_photo: session[:photo], caption: args.join(' ')
+
+      if new_photo.save
+        session.delete :photo
+        respond_with :message, text: "🌄 Your photo was saved!"
+      else
+        respond_with :message, text: "🤬 Failed to save photo: #{new_photo.errors.full_messages} (@SamWolfson should fix this)"
+      end
+
+    else
+      respond_with :message, text: "🧐 You didn't send a photo!"
+    end
+  end
+
+  # shorthand for sendphoto
+  def sp(*args)
+    sendphoto(*args)
+  end
+
+  # get back a random photo that was sent to the chat
+  def getphoto(*)
+    photos = @chat.photos
+
+    if photos.empty?
+      respond_with :message, text: "😭 You don't have any photos! Use /sendphoto to add some.", parse_mode: :html
+    else
+      photo = photos.sample
+      respond_with :photo, photo: photo.telegram_photo, caption: photo.caption
+    end
+  end
+
+  # shorthand for getphoto
+  def gp(*)
+    getphoto(*[])
   end
 
   # The format of a quote is

@@ -3,4 +3,5 @@ class Chat < ApplicationRecord
   has_many :quotes
   has_many :members
   has_many :eight_ball_answers
+  has_many :photos
 end

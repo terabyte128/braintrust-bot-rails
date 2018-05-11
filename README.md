@@ -27,9 +27,9 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 
 **Photos**
 
-- [ ] Store photos from a chat
-- [ ] Support captions
-- [ ] Retrive photos at random
+- [X] Store photos from a chat
+- [X] Support captions
+- [X] Retrive photos at random
 - [ ] Internal photo backup (as opposed to just being stored on Telegram)
 
 **Magic 8-Ball**
