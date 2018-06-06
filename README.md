@@ -32,10 +32,12 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 - [X] Retrive photos at random
 - [ ] Internal photo backup (as opposed to just being stored on Telegram)
 
-**Magic 8-Ball**
+**Magic**
 
 - [X] Send a command to roll an 8-ball and get back a divine answer from the bot
+- [X] Weekly(-ish) luck statistics for each member of a chat group (list from most to least lucky)
 
 **Administration**
 
 - [X] Admin interface for managing quotes, chats, photos, etc.
+

@@ -22,4 +22,16 @@ namespace :braintrust_bot do
 
     send_quote
   end
+
+  desc "Change luck for each person"
+  task change_luck: :environment do
+    Chat.all.each do |chat|
+      chat.members.each do |m|
+        if rand(6) == 0
+          m.luck = rand(101)
+          m.save
+        end
+      end
+    end
+  end
 end

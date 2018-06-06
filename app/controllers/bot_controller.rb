@@ -253,6 +253,26 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  def luck
+    response = "🍀 <b>Luck Statistics</b>\n"
+
+    statistics = @chat.members.map do |m|
+      [m.luck, m.username]
+    end
+
+    statistics.sort! do |a, b|
+      b.first <=> a.first
+    end
+
+    a = statistics.map do |s|
+      "<b>#{s.first}:</b> #{s.second}"
+    end
+
+    response << a.join("\n")
+
+    respond_with :message, text: response, parse_mode: :html
+  end
+
   private
 
   def find_or_create_chat
