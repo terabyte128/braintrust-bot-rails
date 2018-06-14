@@ -35,7 +35,7 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 **Magic**
 
 - [X] Send a command to roll an 8-ball and get back a divine answer from the bot
-- [X] Weekly(-ish) luck statistics for each member of a chat group (list from most to least lucky)
+- [X] Luck statistics for each member of a chat group
 
 **Administration**
 
