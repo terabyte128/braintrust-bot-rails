@@ -30,7 +30,7 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 - [X] Store photos from a chat
 - [X] Support captions
 - [X] Retrive photos at random
-- [ ] Internal photo backup (as opposed to just being stored on Telegram)
+- [X] Internal photo backup (as opposed to just being stored on Telegram)
 
 **Magic**
 
