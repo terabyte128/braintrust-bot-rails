@@ -1,4 +1,6 @@
 require "#{Rails.root}/lib/helpers/application_helpers"
+require 'open-uri'
+require 'fileutils'
 include ApplicationHelpers
 
 class BotController < Telegram::Bot::UpdatesController
@@ -10,6 +12,13 @@ class BotController < Telegram::Bot::UpdatesController
   use_session!
 
   def message(update)
+    # assume that the next message they send means they don't want to add location (unless that message is a location)
+    latest_quote = @chat.quotes.order(created_at: :desc).where(sender: from['username'], location_confirmed: false).first
+
+    unless latest_quote.nil?
+      latest_quote.location_confirmed = true
+      latest_quote.save
+    end
 
     if update.key?('photo')
       photo_sizes = update['photo']
@@ -23,30 +32,30 @@ class BotController < Telegram::Bot::UpdatesController
       session[:photo] = largest_photo['file_id']
     end
 
-    # handle messages that begin with the bot's username specially
-    if update.key?('text') && update['text'].downcase.starts_with?("@" + Telegram.bot.username.downcase)
-      # pluck out the text from the update, cut out the @botusername part,
-      # split it into an array (as summon would expect), and splat it for args to summon
-      summon *update['text'][Telegram.bot.username.length + 1..-1].split(' ')
-      return
+    # handle messages that begin with special prefixes
+    if update.key?('text')
+      prefixes = ["@#{Telegram.bot.username.downcase}", '@channel', '@everyone', '@all', '@people']
+
+      prefixes.each do |prefix|
+        if update['text'].downcase.starts_with?(prefix)
+          # pluck out the text from the update, cut out the @botusername part,
+          # split it into an array (as summon would expect), and splat it for args to summon
+          summon *update['text'][prefix.length..-1].split(' ')
+          return
+        end
+      end
     end
 
     # if there's a location in the update and the sender's latest quote does not have a confirmed location
     # then add the longitude and latitude to their location (for Gwen)
-    if update.key?('message') && update['message'].key?('location')
+    if update.key?('location') && !latest_quote.nil?
       # get the latest quote sent by this sender in this chat
-      latest_quote = @chat.quotes.order(created_at: :desc).where(sender: from['username']).first
+      location = update['location']
 
-      unless latest_quote.location_confirmed
-        location = update['message']['location']
-
-        latest_quote.longitude = location['longitude']
-        latest_quote.latitude = location['latitude']
-        respond_with :message, text: '🗺 A location was added to your latest quote!'
-      end
-
-      latest_quote.location_confirmed = true
+      latest_quote.longitude = location['longitude']
+      latest_quote.latitude = location['latitude']
       latest_quote.save
+      respond_with :message, text: '🗺 A location was added to your latest quote!'
     end
   end
 
@@ -58,6 +67,21 @@ class BotController < Telegram::Bot::UpdatesController
       new_photo = @chat.photos.new sender: from['username'], telegram_photo: session[:photo], caption: args.join(' ')
 
       if new_photo.save
+        # prepare to download the file now that we definitely want to keep it
+        file_info = bot.get_file(file_id: session[:photo])
+        url = "https://api.telegram.org/file/bot#{ENV['BOT_TOKEN']}/#{file_info['result']['file_path']}"
+        ext = file_info['result']['file_path'].partition('.').last
+
+        # make a directory with this chat ID if it doesn't already exist
+        dirname = Rails.root.join('images', @chat.id.to_s).to_s
+        unless File.directory?(dirname)
+          FileUtils.mkdir_p(dirname)
+        end
+
+        # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
+        dl_image = open(url)
+        IO.copy_stream(dl_image, dirname + "/#{new_photo.id}.#{ext}")
+
         session.delete :photo
         respond_with :message, text: "🌄 Your photo was saved!"
       else
@@ -129,6 +153,11 @@ class BotController < Telegram::Bot::UpdatesController
 
     if author.empty?
       quotes = @chat.quotes
+
+      if rand(10) > 8 # generate a random quote sometimes, but only if we're not given an author
+        markov_quote
+        return
+      end
     else
       quotes = @chat.quotes.where 'LOWER(author) LIKE ?', "%#{author.downcase}%"
     end
@@ -208,7 +237,7 @@ class BotController < Telegram::Bot::UpdatesController
     if message.empty?
       announcement << "\n"
     else
-      announcement << message.join(' ') << "\n\n"
+      announcement << message.join(' ').strip << "\n\n"
     end
 
     announcement << chat_members.join(', ')
@@ -271,6 +300,20 @@ class BotController < Telegram::Bot::UpdatesController
     response << a.join("\n")
 
     respond_with :message, text: response, parse_mode: :html
+  end
+
+  def markov_quote
+    markov = MarkyMarkov::TemporaryDictionary.new
+
+    @chat.quotes.each do |quote|
+      markov.parse_string quote.content
+    end
+
+    author = @chat.quotes.sample.author
+
+    respond_with :message,
+                 text: format_quote(markov.generate_n_words(rand(8..16)), author, nil, "20#{rand(16..18)}"),
+                 parse_mode: :html
   end
 
   private
