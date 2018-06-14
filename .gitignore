@@ -25,4 +25,7 @@
 # ignore some .idea files
 **/.idea/workspace.xml
 **/.idea/tasks.xml
-telegram_images/
+
+# ignore all the telegram images but keep the .keep file
+telegram_images/*
+!telegram_images/.keep
