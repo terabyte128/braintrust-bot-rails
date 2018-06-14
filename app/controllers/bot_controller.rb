@@ -73,7 +73,7 @@ class BotController < Telegram::Bot::UpdatesController
         ext = file_info['result']['file_path'].partition('.').last
 
         # make a directory with this chat ID if it doesn't already exist
-        dirname = Rails.root.join('images', @chat.id.to_s).to_s
+        dirname = Rails.root.join('telegram_images', @chat.id.to_s).to_s
         unless File.directory?(dirname)
           FileUtils.mkdir_p(dirname)
         end
