@@ -21,9 +21,9 @@ In (semi-)active development, when I have time to work on it. Coming soon (™) 
 - [X] Store quotes from a chat (message text, author, sender, context)
 - [X] Quotes with locations (optional)
 - [X] Retrive quotes at random
-- [ ] Alexa support (ask Alexa for a random quote)
+- [X] Alexa support (ask Alexa for a random quote)
 - [X] Automatically send quotes once a day with some probability (can be disabled)
-- [ ] Automatic quote generation based on Markov chains and all quotes collected from a single user
+- [X] Automatic quote generation based on Markov chains and all quotes collected from a single user
 
 **Photos**
 

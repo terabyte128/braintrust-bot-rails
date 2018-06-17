@@ -20,6 +20,9 @@ test:
   <<: *default
   database: db/test.sqlite3
 
-production:
-  <<: *default
-  database: db/production.sqlite3
+# In production, the database configuration is decided via the `DATABASE_URL`
+# environment variable. If nothing is specified here, it will take precedence.
+
+#production:
+#  <<: *default
+#  database: db/production.sqlite3

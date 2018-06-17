@@ -47,9 +47,13 @@ group :development do
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
 
+group :production do
+  gem 'pg'
+end
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-gem 'activeadmin'
-gem 'telegram-bot'
-gem 'devise'
-gem 'marky_markov'
+gem 'activeadmin', '~> 1.3.0'
+gem 'telegram-bot', '~> 0.14.0', git: 'https://github.com/terabyte128/telegram-bot'
+gem 'devise', '~> 4.4.3'
+gem 'marky_markov', '~> 0.3.5'

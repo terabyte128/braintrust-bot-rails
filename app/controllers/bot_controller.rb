@@ -62,7 +62,7 @@ class BotController < Telegram::Bot::UpdatesController
   # send a photo to the chat
   # uses the :photo key in the session store -- if it's not there, then they didn't send a photo
   # *args is an optional caption
-  def sendphoto(*args)
+  def sendphoto!(*args)
     if session.key? :photo
       new_photo = @chat.photos.new sender: from['username'], telegram_photo: session[:photo], caption: args.join(' ')
 
@@ -94,12 +94,12 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # shorthand for sendphoto
-  def sp(*args)
-    sendphoto(*args)
+  def sp!(*args)
+    sendphoto!(*args)
   end
 
   # get back a random photo that was sent to the chat
-  def getphoto(*)
+  def getphoto!(*)
     photos = @chat.photos
 
     if photos.empty?
@@ -111,14 +111,14 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # shorthand for getphoto
-  def gp(*)
-    getphoto(*[])
+  def gp!(*)
+    getphoto!(*[])
   end
 
   # The format of a quote is
   # content && author && context
   # where context is optional.
-  def sendquote(*args)
+  def sendquote!(*args)
     # tokenize the quote into content, author, and (optional) context
     tokens = args.join(' ').split('&&')
 
@@ -143,50 +143,41 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # shortcut method for sendquote
-  def sq(*args)
-    sendquote(*args)
+  def sq!(*args)
+    sendquote!(*args)
   end
 
-  def getquote(*args)
+  def getquote!(*args)
     # the sender can optionally pass the author as an argument if they only want specific authors
-    author = args.join(' ')
+    author = args.join(' ').presence # returns the text if non-empty; otherwise nil
 
-    if author.empty?
-      quotes = @chat.quotes
+    # 10% chance of getting a Markov quote
+    quote = @chat.random_quote (rand(10) > 8), author
 
-      if rand(10) > 8 # generate a random quote sometimes, but only if we're not given an author
-        markov_quote
-        return
-      end
+    if quote.nil?
+      respond_with :message, text: "😭 You don't have any quotes#{" by <b>#{author}</b>" if author}! Use /sendquote to add some.", parse_mode: :html
     else
-      quotes = @chat.quotes.where 'LOWER(author) LIKE ?', "%#{author.downcase}%"
-    end
-
-    if quotes.empty?
-      respond_with :message, text: "😭 You don't have any quotes#{" by <b>#{author}</b>" unless author.empty?}! Use /sendquote to add some.", parse_mode: :html
-    else
-      quote = quotes.sample
       respond_with :message, text: format_quote(quote.content, quote.author, quote.context, quote.created_at.year), parse_mode: :html
     end
   end
 
   # shortcut method for getquote
-  def gq(*args)
-    getquote(*args)
+  def gq!(*args)
+    getquote!(*args)
   end
 
   # shortcut method for getquote and sendquote
   # if no arguments are passed, calls getquote; else calls sendquote
-  def quote(*args)
+  def quote!(*args)
     if args.empty?
-      getquote *args
+      getquote! *args
     else
-      sendquote *args
+      sendquote! *args
     end
   end
 
   # add users to the chat group
-  def add(*user_names)
+  def add!(*user_names)
     user_names = process_users user_names
 
     # add all the rest to the group
@@ -204,7 +195,7 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # remove users from the chat group
-  def remove(*user_names)
+  def remove!(*user_names)
     user_names = process_users user_names
 
     # add all the rest to the group
@@ -222,13 +213,13 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # get all members in the chat group
-  def members
+  def members!
     chat_members = @chat.members.map { |m| "<b>#{m.username}</b>" }
     respond_with :message, text: "📜 Chat group members: #{chat_members.sort.to_sentence}", parse_mode: :html
   end
 
   # send a summon to all messages in the chat group, with an optional message
-  def summon(*message)
+  def summon!(*message)
     chat_members = @chat.members.map { |m| "@#{m.username}" }
     chat_members.select! { |m| m !=  from['username'].downcase }
 
@@ -246,11 +237,11 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # shorthand for summon
-  def s(*message)
-    summon *message
+  def s!(*message)
+    summon! *message
   end
 
-  def quotes(*preferences)
+  def quotes!(*preferences)
     if preferences.length != 1
       respond_with :message, text: "🧐 Usage: /quotes [enable | disable]"
       return
@@ -272,7 +263,7 @@ class BotController < Telegram::Bot::UpdatesController
     @chat.save
   end
 
-  def on_8ball
+  def on_8ball!
     answer = @chat.eight_ball_answers.sample
 
     if answer.nil?
@@ -282,7 +273,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
-  def luck
+  def luck!
     response = "🍀 <b>Luck Statistics</b>\n"
 
     statistics = @chat.members.map do |m|
@@ -302,19 +293,6 @@ class BotController < Telegram::Bot::UpdatesController
     respond_with :message, text: response, parse_mode: :html
   end
 
-  def markov_quote
-    markov = MarkyMarkov::TemporaryDictionary.new
-
-    @chat.quotes.each do |quote|
-      markov.parse_string quote.content
-    end
-
-    author = @chat.quotes.sample.author
-
-    respond_with :message,
-                 text: format_quote(markov.generate_n_words(rand(8..16)), author, nil, "20#{rand(16..18)}"),
-                 parse_mode: :html
-  end
 
   private
 
