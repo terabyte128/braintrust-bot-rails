@@ -3,12 +3,7 @@ ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: proc{ I18n.t("active_admin.dashboard") }
 
   content title: proc{ I18n.t("active_admin.dashboard") } do
-    div class: "blank_slate_container", id: "dashboard_default_message" do
-      span class: "blank_slate" do
-        span I18n.t("active_admin.dashboard_welcome.welcome")
-        small I18n.t("active_admin.dashboard_welcome.call_to_action")
-      end
-    end
+
 
     # Here is an example of a simple dashboard with columns and panels.
     #
@@ -29,5 +24,26 @@ ActiveAdmin.register_page "Dashboard" do
     #     end
     #   end
     # end
+
+    columns do
+      column do
+        panel 'Chat Statistics' do
+          table_for Chat.all do
+            column('Chat Title') { |c| link_to(c.title, admin_chat_path(c)) }
+            column('Quotes') { |c| c.quotes.count }
+            column('Members') { |c| c.members.count }
+          end
+        end
+      end
+
+      column do
+        panel 'Unregistered Alexa Devices' do
+          table_for Alexa.where chat_id: nil do
+            column('Device ID', :device_user) { |u| link_to(u.device_user.truncate(10), admin_alexa_path(u)) }
+            column 'Added On', :created_at
+          end
+        end
+      end
+    end
   end # content
 end

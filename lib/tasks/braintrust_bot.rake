@@ -34,4 +34,35 @@ namespace :braintrust_bot do
       end
     end
   end
+
+  desc "Import database entries from BrainTrust Bot 1.0"
+  task import_old_database: :environment do
+    DATABASE_NAME = 'btb_corpus'
+    FILE_PATH = "Rails.root.join('tmp')/temp.csv"
+
+    def command(table)
+      "psql -c \"COPY (SELECT * FROM #{table}) TO '#{FILE_PATH}' WITH CSV DELIMITER '|';\" #{DATABASE_NAME}"
+    end
+
+    def try_delete
+      File.delete FILE_PATH if File.exist?(FILE_PATH)
+    end
+
+    # chats
+    try_delete
+    system command('braintrust_bot_quotechat')
+
+    File.open(FILE_PATH) do |f|
+      f.each_line do |line|
+        splat = line.split '|'
+        chat = Chat.new telegram_chat: splat[1], quotes_enabled: splat[2] == 't'
+        chat.save
+      end
+    end
+
+    # quotes
+    try_delete
+    system command('braintrust_bot_')
+
+  end
 end

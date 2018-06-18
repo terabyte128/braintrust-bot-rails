@@ -273,6 +273,8 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  alias_method '8ball!', :on_8ball!
+
   def luck!
     response = "🍀 <b>Luck Statistics</b>\n"
 
