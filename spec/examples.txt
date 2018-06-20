@@ -1,0 +1,22 @@
+example_id                                    | status | run_time        |
+--------------------------------------------- | ------ | --------------- |
+./spec/requests/bot_controller_spec.rb[1:1:1] | passed | 0.09436 seconds |
+./spec/requests/bot_controller_spec.rb[1:1:2] | passed | 0.12815 seconds |
+./spec/requests/bot_controller_spec.rb[1:1:3] | passed | 0.10522 seconds |
+./spec/requests/bot_controller_spec.rb[1:2:1] | passed | 0.15156 seconds |
+./spec/requests/bot_controller_spec.rb[1:2:2] | passed | 0.18956 seconds |
+./spec/requests/bot_controller_spec.rb[1:2:3] | passed | 0.09846 seconds |
+./spec/requests/bot_controller_spec.rb[1:2:4] | passed | 0.1652 seconds  |
+./spec/requests/bot_controller_spec.rb[1:3:1] | passed | 0.05425 seconds |
+./spec/requests/bot_controller_spec.rb[1:3:2] | passed | 0.05546 seconds |
+./spec/requests/bot_controller_spec.rb[1:3:3] | passed | 0.07069 seconds |
+./spec/requests/bot_controller_spec.rb[1:3:4] | passed | 0.08045 seconds |
+./spec/requests/bot_controller_spec.rb[1:3:5] | passed | 0.08101 seconds |
+./spec/requests/bot_controller_spec.rb[1:4:1] | passed | 0.5259 seconds  |
+./spec/requests/bot_controller_spec.rb[1:4:2] | passed | 0.06608 seconds |
+./spec/requests/bot_controller_spec.rb[1:5:1] | passed | 0.05803 seconds |
+./spec/requests/bot_controller_spec.rb[1:5:2] | passed | 0.0761 seconds  |
+./spec/requests/bot_controller_spec.rb[1:5:3] | passed | 0.10934 seconds |
+./spec/requests/bot_controller_spec.rb[1:6:1] | passed | 0.07633 seconds |
+./spec/requests/bot_controller_spec.rb[1:6:2] | passed | 0.03476 seconds |
+./spec/requests/helpers_spec.rb[1:1:1]        | failed | 0.00143 seconds |

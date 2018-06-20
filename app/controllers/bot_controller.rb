@@ -5,15 +5,19 @@ include ApplicationHelpers
 
 class BotController < Telegram::Bot::UpdatesController
 
-  before_action :find_or_create_chat
+  PREFIXES = %w(@channel @everyone @all @people)
+  PREFIXES << "@#{Telegram.bot.username.downcase}" if Telegram.bot.username.present?
 
-  BotController.session_store = :file_store, Rails.root.join('tmp', 'session_store')
+  before_action :find_or_create_chat, :find_or_create_user, :add_members
 
   use_session!
 
   def message(update)
+
+    session.delete :photo
+
     # assume that the next message they send means they don't want to add location (unless that message is a location)
-    latest_quote = @chat.quotes.order(created_at: :desc).where(sender: from['username'], location_confirmed: false).first
+    latest_quote = @user.quotes.order(created_at: :desc).where(location_confirmed: false, chat: @chat).first
 
     unless latest_quote.nil?
       latest_quote.location_confirmed = true
@@ -34,13 +38,11 @@ class BotController < Telegram::Bot::UpdatesController
 
     # handle messages that begin with special prefixes
     if update.key?('text')
-      prefixes = ["@#{Telegram.bot.username.downcase}", '@channel', '@everyone', '@all', '@people']
-
-      prefixes.each do |prefix|
+      PREFIXES.each do |prefix|
         if update['text'].downcase.starts_with?(prefix)
           # pluck out the text from the update, cut out the @botusername part,
           # split it into an array (as summon would expect), and splat it for args to summon
-          summon *update['text'][prefix.length..-1].split(' ')
+          summon! *update['text'][prefix.length..-1].split(' ')
           return
         end
       end
@@ -64,23 +66,27 @@ class BotController < Telegram::Bot::UpdatesController
   # *args is an optional caption
   def sendphoto!(*args)
     if session.key? :photo
-      new_photo = @chat.photos.new sender: from['username'], telegram_photo: session[:photo], caption: args.join(' ')
+      new_photo = @chat.photos.new member: @user, telegram_photo: session[:photo], caption: args.join(' ')
 
       if new_photo.save
-        # prepare to download the file now that we definitely want to keep it
-        file_info = bot.get_file(file_id: session[:photo])
-        url = "https://api.telegram.org/file/bot#{ENV['BOT_TOKEN']}/#{file_info['result']['file_path']}"
-        ext = file_info['result']['file_path'].partition('.').last
 
-        # make a directory with this chat ID if it doesn't already exist
-        dirname = Rails.root.join('telegram_images', @chat.id.to_s).to_s
-        unless File.directory?(dirname)
-          FileUtils.mkdir_p(dirname)
+        # since this involves downloading a real photo from Telegram, it's not really something we can test...
+        unless Rails.env == 'test'
+          # prepare to download the file now that we definitely want to keep it
+          file_info = bot.get_file(file_id: session[:photo])
+          url = "https://api.telegram.org/file/bot#{ENV['BOT_TOKEN']}/#{file_info['result']['file_path']}"
+          ext = file_info['result']['file_path'].partition('.').last
+
+          # make a directory with this chat ID if it doesn't already exist
+          dirname = Rails.root.join('telegram_images', @chat.id.to_s).to_s
+          unless File.directory?(dirname)
+            FileUtils.mkdir_p(dirname)
+          end
+
+          # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
+          dl_image = open(url)
+          IO.copy_stream(dl_image, dirname + "/#{new_photo.id}.#{ext}")
         end
-
-        # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
-        dl_image = open(url)
-        IO.copy_stream(dl_image, dirname + "/#{new_photo.id}.#{ext}")
 
         session.delete :photo
         respond_with :message, text: "🌄 Your photo was saved!"
@@ -129,7 +135,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     tokens.map! { |t| t.strip } # remove leading and trailing whitespace
-    new_quote = @chat.quotes.new content: tokens[0], author: tokens[1], sender: from['username']
+    new_quote = @chat.quotes.new content: tokens[0], author: tokens[1], member: @user
 
     if tokens.length == 3
       new_quote.context = tokens[2]
@@ -176,6 +182,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+=begin
   # add users to the chat group
   def add!(*user_names)
     user_names = process_users user_names
@@ -198,9 +205,10 @@ class BotController < Telegram::Bot::UpdatesController
   def remove!(*user_names)
     user_names = process_users user_names
 
-    # add all the rest to the group
+    # remove them if their names match
     user_names.each do |u|
-      @chat.members.where(username: u).delete_all
+      member = @chat.members.where(username: u)
+      @chat.members.delete(member)
     end
 
     user_names.map! { |u| "<b>#{u}</b>" }
@@ -211,17 +219,19 @@ class BotController < Telegram::Bot::UpdatesController
       respond_with :message, text: "😢 #{user_names.to_sentence} #{user_names.size == 1 ? 'was' : 'were'} removed from the chat group!", parse_mode: :html
     end
   end
+=end
 
   # get all members in the chat group
   def members!
-    chat_members = @chat.members.map { |m| "<b>#{m.username}</b>" }
+    chat_members = @chat.members.map { |m| "<b>#{pretty_name(m)}</b>" }
     respond_with :message, text: "📜 Chat group members: #{chat_members.sort.to_sentence}", parse_mode: :html
   end
 
   # send a summon to all messages in the chat group, with an optional message
   def summon!(*message)
-    chat_members = @chat.members.map { |m| "@#{m.username}" }
-    chat_members.select! { |m| m !=  from['username'].downcase }
+    chat_members = @chat.members
+                       .select { |m| m.username.present? && m.username != from['username'].downcase }
+                       .map { |m| "@#{m.username}" }
 
     announcement = "📣 <b>#{ if from.key? 'first_name' then from['first_name'] else from['username'] end }</b>\n"
 
@@ -231,7 +241,7 @@ class BotController < Telegram::Bot::UpdatesController
       announcement << message.join(' ').strip << "\n\n"
     end
 
-    announcement << chat_members.join(', ')
+    announcement << chat_members.sort.join(', ')
 
     respond_with :message, text: announcement, parse_mode: :html
   end
@@ -279,7 +289,7 @@ class BotController < Telegram::Bot::UpdatesController
     response = "🍀 <b>Luck Statistics</b>\n"
 
     statistics = @chat.members.map do |m|
-      [m.luck, m.username]
+      [m.luck, pretty_name(m)]
     end
 
     statistics.sort! do |a, b|
@@ -299,20 +309,75 @@ class BotController < Telegram::Bot::UpdatesController
   private
 
   def find_or_create_chat
-    @chat = Chat.where(telegram_chat: chat['id']).first_or_create do |chat|
-      chat.title = chat['title']
+    @chat = Chat.where(telegram_chat: chat['id']).first_or_create
+
+    # update title if necessary
+    @chat.title = chat['title']
+    @chat.save
+  end
+
+  # if the message contains newly added chat members, then add them to the chat automatically
+  def add_members
+    if update.dig('message', 'new_chat_members')
+      added = []
+
+      update['message']['new_chat_members'].each do |m|
+
+        next if !m['username'].present? || m['username'].downcase.end_with?('bot')
+
+        new_member = Member.find_by_telegram_user m['id']
+        new_member ||= Member.find_by_username m['username'].downcase
+        new_member ||= Member.new username: m['username'], telegram_user: m['id']
+
+        new_member.first_name = m['first_name'] if m['first_name'].present?
+        new_member.last_name = m['last_name'] if m['last_name'].present?
+
+        if new_member.chats.exists?(@chat.id)
+          new_member.save
+        else
+          new_member.chat << @chat
+        end
+
+        added << new_member
+      end
+
+      unless added.empty?
+        respond_with :message, text: "❤️ #{added.to_sentence} #{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
+      end
     end
   end
 
-  # Given a list of usernames, remove leading @s, remove duplicates, sort and downcase them
-  def process_users(user_names)
-    # remove leading @ and downcase
-    user_names = user_names.map { |u| if u.start_with? '@' then u[1..-1].downcase else u.downcase end }
+  # check the sender of each message to see whether they're part of this chat group.
+  # if not, create the user as necessary and add them
+  def find_or_create_user
+    # try and find by ID
+    @user = Member.find_by_telegram_user from['id']
 
-    # filter out blank users
-    user_names = user_names.select { |u| !u.blank? }
+    if @user.nil?
+      # try and find by username
+      @user = Member.find_by_username from['username'].downcase if from['username'].present?
 
-    # remove duplicates
-    user_names.uniq.sort
+      if @user.nil?
+        @user = Member.new telegram_user: from['id']
+      else
+        # update their ID to match
+        @user.telegram_user = from['id']
+      end
+    end
+
+    # update their username and first/last names because we know their ID (always stay up to date!)
+    @user.username = from['username'].downcase if from['username'].present?
+    @user.first_name = from['first_name'] if from['first_name'].present?
+    @user.last_name = from['last_name'] if from['last_name'].present?
+
+    # add new members automatically
+    unless @user.chats.exists?(@chat.id)
+      @user.chats << @chat
+      respond_with :message, text: "❤️ #{pretty_name(@user)} was automatically added to the chat group."
+    end
+
+    unless @user.save
+      respond_with :message, text: "⚠️ Failed to update #{from['username']}. (#{@user.errors.full_messages})"
+    end
   end
 end

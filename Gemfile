@@ -36,6 +36,7 @@ gem 'jbuilder', '~> 2.5'
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'rspec-rails', '~> 3.7'
 end
 
 group :development do
@@ -57,3 +58,4 @@ gem 'activeadmin', '~> 1.3.0'
 gem 'telegram-bot', '~> 0.14.0'
 gem 'devise', '~> 4.4.3'
 gem 'marky_markov', '~> 0.3.5'
+

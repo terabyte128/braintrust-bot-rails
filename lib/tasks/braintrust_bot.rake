@@ -25,12 +25,10 @@ namespace :braintrust_bot do
 
   desc "Change luck for each person"
   task change_luck: :environment do
-    Chat.all.each do |chat|
-      chat.members.each do |m|
-        if rand(6) == 0
-          m.luck = rand(101)
-          m.save
-        end
+    Member.all.each do |m|
+      if rand(6) == 0
+        m.luck = rand(101)
+        m.save
       end
     end
   end
@@ -48,21 +46,51 @@ namespace :braintrust_bot do
       File.delete FILE_PATH if File.exist?(FILE_PATH)
     end
 
+    def process_file
+      File.open(FILE_PATH) do |f|
+        f.each_line do |line|
+          splat = line.split '|'
+          yield(splat)
+        end
+      end
+    end
+
     # chats
     try_delete
     system command('braintrust_bot_quotechat')
-
-    File.open(FILE_PATH) do |f|
-      f.each_line do |line|
-        splat = line.split '|'
-        chat = Chat.new telegram_chat: splat[1], quotes_enabled: splat[2] == 't'
-        chat.save
-      end
+    process_file do |tokens|
+      Chat.create! telegram_chat: tokens[1], quotes_enabled: tokens[2] == 't'
     end
 
     # quotes
     try_delete
-    system command('braintrust_bot_')
+    system command('braintrust_bot_chatmember')
+    process_file do |tokens|
+      chat = Chat.where(telegram_chat: tokens[2]).first_or_create!
+      chat.members.create! username: tokens[1]
+    end
 
+    try_delete
+    system command('braintrust_bot_quotestorage')
+    process_file do |tokens|
+      chat = Chat.where(telegram_chat: tokens[1]).first_or_create!
+      quote = chat.quotes.new content: tokens[2],
+                              author: tokens[4],
+                              created_at: DateTime.new(tokens[5])
+
+      quote.sender = tokens[7] if tokens[7].present?
+      quote.context = tokens[3] if tokens[3].present?
+
+      quote.save!
+    end
+
+    try_delete
+    system command('braintrust_bot_photo')
+    process_file do |tokens|
+      chat = Chat.where(telegram_chat: tokens[1]).first_or_create!
+      # photo = chat.photos.new telegram_photo: tokens[5],
+
+
+    end
   end
 end

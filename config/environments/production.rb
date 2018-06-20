@@ -90,4 +90,8 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   routes.default_url_options = {host: 'braintrust-bot-rails.sophocles.xyz', protocol: 'https'} # https is necessary!
+
+  # Enable Bot's session unconditionally.
+  config.telegram_updates_controller.session_store = :file_store,
+      Rails.root.join('tmp', 'session_store')
 end

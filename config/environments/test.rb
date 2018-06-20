@@ -39,4 +39,10 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # Enable Bot's session unconditionally.
+  config.telegram_updates_controller.session_store = :memory_store
+
+  Telegram.reset_bots
+  Telegram::Bot::ClientStub.stub_all!
 end

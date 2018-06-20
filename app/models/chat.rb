@@ -1,7 +1,8 @@
 class Chat < ApplicationRecord
   validates_presence_of :telegram_chat
   has_many :quotes
-  has_many :members
+  has_many :chat_members
+  has_many :members, through: :chat_members
   has_many :eight_ball_answers
   has_many :photos
   has_many :alexas
@@ -22,12 +23,16 @@ class Chat < ApplicationRecord
         markov.parse_string quote.content
       end
 
-      author = self.quotes.sample.author
+      if markov.dictionary.empty?
+        self.quotes.sample
+      else
+        author = self.quotes.sample.author
 
-      Quote.new(
-          content: markov.generate_n_words(rand(8..16)),
-          author: author,
-          created_at: Date.new(2000 + rand(16..18), 1, 1))
+        Quote.new(
+            content: markov.generate_n_words(rand(8..16)),
+            author: author,
+            created_at: Date.new(2000 + rand(16..18), 1, 1))
+      end
     else
       if author
         quotes = self.quotes.where 'LOWER(author) LIKE ?', "%#{author.downcase}%"

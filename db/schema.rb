@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180617220258) do
+ActiveRecord::Schema.define(version: 20180618183510) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -51,6 +51,15 @@ ActiveRecord::Schema.define(version: 20180617220258) do
     t.index ["chat_id"], name: "index_alexas_on_chat_id"
   end
 
+  create_table "chat_members", force: :cascade do |t|
+    t.integer "chat_id"
+    t.integer "member_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chat_id"], name: "index_chat_members_on_chat_id"
+    t.index ["member_id"], name: "index_chat_members_on_member_id"
+  end
+
   create_table "chats", force: :cascade do |t|
     t.string "telegram_chat", null: false
     t.boolean "quotes_enabled", default: false, null: false
@@ -68,22 +77,24 @@ ActiveRecord::Schema.define(version: 20180617220258) do
   end
 
   create_table "members", force: :cascade do |t|
-    t.integer "chat_id"
     t.text "username"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "luck", default: 50
-    t.index ["chat_id"], name: "index_members_on_chat_id"
+    t.integer "telegram_user", limit: 8
+    t.string "first_name"
+    t.string "last_name"
   end
 
   create_table "photos", force: :cascade do |t|
-    t.string "sender"
     t.text "caption"
     t.text "telegram_photo"
     t.integer "chat_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "member_id"
     t.index ["chat_id"], name: "index_photos_on_chat_id"
+    t.index ["member_id"], name: "index_photos_on_member_id"
   end
 
   create_table "quotes", force: :cascade do |t|
@@ -91,13 +102,13 @@ ActiveRecord::Schema.define(version: 20180617220258) do
     t.text "content", null: false
     t.text "context"
     t.string "author", null: false
-    t.string "sender"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "longitude", precision: 12, scale: 7
     t.decimal "latitude", precision: 12, scale: 7
     t.boolean "location_confirmed", default: false
+    t.integer "member_id"
     t.index ["chat_id"], name: "index_quotes_on_chat_id"
+    t.index ["member_id"], name: "index_quotes_on_member_id"
   end
-
 end
