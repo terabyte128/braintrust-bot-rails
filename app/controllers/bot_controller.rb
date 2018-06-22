@@ -310,12 +310,10 @@ class BotController < Telegram::Bot::UpdatesController
       end
 
       unless added.empty?
-
-
         pretty_users = added.map do |a|
           result = pretty_name(a)
           # notify users that they should add a username
-          result << '*' unless a.username.present?
+          result << "<b>*</b>" unless a.username.present?
           result
         end
 

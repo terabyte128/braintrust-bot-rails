@@ -230,7 +230,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       end
 
       expected_users = (2..6).map do |i|
-        "first#{i}\\*"
+        "first#{i}<b>\\*</b>"
       end
 
       expect { dispatch_message '', new_chat_members }.to(
