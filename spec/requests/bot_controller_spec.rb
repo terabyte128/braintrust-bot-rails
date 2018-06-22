@@ -120,7 +120,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       (2..6).each do |i|
         new_chat_members[:new_chat_members] << {
             id: "1234#{i}",
-            username: "test_user#{i}"
+            username: "test_usEr#{i}"
         }
       end
 

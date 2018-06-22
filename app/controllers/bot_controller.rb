@@ -299,7 +299,7 @@ class BotController < Telegram::Bot::UpdatesController
 
         new_member.first_name = m['first_name'] if m['first_name'].present?
         new_member.last_name = m['last_name'] if m['last_name'].present?
-        new_member.username = m['username'] if m['username'].present?
+        new_member.username = m['username'].downcase if m['username'].present?
 
         unless new_member.chats.exists?(@chat.id)
           new_member.chats << @chat
@@ -334,7 +334,7 @@ class BotController < Telegram::Bot::UpdatesController
       return if left['is_bot']
 
       member = @chat.members.find_by_telegram_user left['id']
-      member ||= @chat.members.find_by_username left['username']
+      member ||= @chat.members.find_by_username left['username'].downcase
 
       unless member.nil?
         @chat.members.delete member
