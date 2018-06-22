@@ -317,7 +317,7 @@ class BotController < Telegram::Bot::UpdatesController
           result
         end
 
-        message = "#{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
+        message = "#{added.size == 1 ? 'was' : 'were'} added to the chat group."
 
         message << "\n\n<b>*</b> should add a username before they can be included in summons." if no_username
 
@@ -338,7 +338,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       unless member.nil?
         @chat.members.delete member
-        respond_with :message, text: "💔 #{pretty_name(member, true)} was automatically removed from the chat group."
+        respond_with :message, text: "💔 #{pretty_name(member, true)} was removed from the chat group."
       end
     end
   end
@@ -374,7 +374,7 @@ class BotController < Telegram::Bot::UpdatesController
     # add new members automatically
     unless @user.chats.exists?(@chat.id)
       @user.chats << @chat
-      response = "❤️ #{pretty_name(@user, true)} was automatically added to the chat group."
+      response = "❤️ #{pretty_name(@user, true)} was added to the chat group."
       response << " (They should add a username before they can be included in summons.)" unless @user.username.present?
 
       respond_with(:message, text: response)
