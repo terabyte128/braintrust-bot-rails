@@ -240,6 +240,49 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(Chat.all.size).to eq 1
       expect(Chat.first.members.all.size).to eq 6
     end
+
+    it 'removes users' do
+      dispatch_message '', create_message(1)
+      dispatch_message '', create_message(2)
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 2
+      expect(Chat.first.members.size).to eq 2
+
+      removal_message = create_message(1)
+      removal_message[:left_chat_member] = create_message(2)[:from]
+
+      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /user2 was automatically removed/)
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 2
+      expect(Chat.first.members.size).to eq 1
+      expect(Chat.first.members.first.telegram_user).to eq 991
+    end
+
+    it 'removes users without usernames' do
+      dispatch_message '', create_message(1)
+
+      removed_user = create_message(2)
+      removed_user[:from].delete :username
+      removed_user[:from][:first_name] = 'sadboi'
+
+      dispatch_message '', removed_user
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 2
+      expect(Chat.first.members.size).to eq 2
+
+      removal_message = create_message(1)
+      removal_message[:left_chat_member] = removed_user[:from]
+
+      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /sadboi was automatically removed/)
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 2
+      expect(Chat.first.members.size).to eq 1
+      expect(Chat.first.members.first.telegram_user).to eq 991
+    end
   end
 
   describe 'summoning' do

@@ -8,7 +8,7 @@ class BotController < Telegram::Bot::UpdatesController
   PREFIXES = %w(@channel @everyone @all @people)
   PREFIXES << "@#{Telegram.bot.username.downcase}" if Telegram.bot.username.present?
 
-  before_action :find_or_create_chat, :find_or_create_user, :add_members
+  before_action :find_or_create_chat, :find_or_create_user, :add_members, :remove_member
 
   use_session!
 
@@ -323,7 +323,24 @@ class BotController < Telegram::Bot::UpdatesController
 
         message << "\n\n<b>*</b> should add a username before they can be included in summons." if no_username
 
-        respond_with :message, text: "❤️ #{pretty_users.to_sentence} #{message}"
+        respond_with :message, text: "❤️ #{pretty_users.to_sentence} #{message}", parse_mode: :html
+      end
+    end
+  end
+
+  # if the message contains removed members, then remove them
+  def remove_member
+    if update.dig('message', 'left_chat_member')
+      left = update['message']['left_chat_member']
+
+      return if left['is_bot']
+
+      member = @chat.members.find_by_telegram_user left['id']
+      member ||= @chat.members.find_by_username left['username']
+
+      unless member.nil?
+        @chat.members.delete member
+        respond_with :message, text: "💔 #{pretty_name(member)} was automatically removed from the chat group."
       end
     end
   end
