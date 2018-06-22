@@ -13,6 +13,7 @@ class BotController < Telegram::Bot::UpdatesController
   use_session!
 
   def message(update)
+    return if @user.nil?
 
     session.delete :photo
 
@@ -65,6 +66,8 @@ class BotController < Telegram::Bot::UpdatesController
   # uses the :photo key in the session store -- if it's not there, then they didn't send a photo
   # *args is an optional caption
   def sendphoto!(*args)
+    return if @user.nil?
+
     if session.key? :photo
       new_photo = @chat.photos.new member: @user, telegram_photo: session[:photo], caption: args.join(' ')
 
@@ -125,6 +128,8 @@ class BotController < Telegram::Bot::UpdatesController
   # content && author && context
   # where context is optional.
   def sendquote!(*args)
+    return if @user.nil?
+
     # tokenize the quote into content, author, and (optional) context
     tokens = args.join(' ').split('&&')
 
@@ -181,45 +186,6 @@ class BotController < Telegram::Bot::UpdatesController
       sendquote! *args
     end
   end
-
-=begin
-  # add users to the chat group
-  def add!(*user_names)
-    user_names = process_users user_names
-
-    # add all the rest to the group
-    user_names.each do |u|
-      @chat.members.where(username: u).first_or_create
-    end
-
-    user_names.map! { |u| "<b>#{u}</b>" }
-
-    if user_names.empty?
-      respond_with :message, text: '🧐 Usage: /add [usernames...]'
-    else
-      respond_with :message, text: "👏 #{user_names.to_sentence} #{user_names.size == 1 ? 'was' : 'were'} added to the chat group!", parse_mode: :html
-    end
-  end
-
-  # remove users from the chat group
-  def remove!(*user_names)
-    user_names = process_users user_names
-
-    # remove them if their names match
-    user_names.each do |u|
-      member = @chat.members.where(username: u)
-      @chat.members.delete(member)
-    end
-
-    user_names.map! { |u| "<b>#{u}</b>" }
-
-    if user_names.empty?
-      respond_with :message, text: '🧐 Usage: /remove [usernames...]'
-    else
-      respond_with :message, text: "😢 #{user_names.to_sentence} #{user_names.size == 1 ? 'was' : 'were'} removed from the chat group!", parse_mode: :html
-    end
-  end
-=end
 
   # get all members in the chat group
   def members!
@@ -323,7 +289,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       update['message']['new_chat_members'].each do |m|
 
-        next if !m['username'].present? || m['username'].downcase.end_with?('bot')
+        next if !m['username'].present? || m['is_bot']
 
         new_member = Member.find_by_telegram_user m['id']
         new_member ||= Member.find_by_username m['username'].downcase
@@ -332,17 +298,16 @@ class BotController < Telegram::Bot::UpdatesController
         new_member.first_name = m['first_name'] if m['first_name'].present?
         new_member.last_name = m['last_name'] if m['last_name'].present?
 
-        if new_member.chats.exists?(@chat.id)
-          new_member.save
-        else
-          new_member.chat << @chat
+        unless new_member.chats.exists?(@chat.id)
+          new_member.chats << @chat
         end
 
+        new_member.save
         added << new_member
       end
 
       unless added.empty?
-        respond_with :message, text: "❤️ #{added.to_sentence} #{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
+        respond_with :message, text: "❤️ #{added.map {|a| pretty_name(a)}.to_sentence} #{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
       end
     end
   end
@@ -350,6 +315,11 @@ class BotController < Telegram::Bot::UpdatesController
   # check the sender of each message to see whether they're part of this chat group.
   # if not, create the user as necessary and add them
   def find_or_create_user
+    if from['is_bot']
+      @user = nil
+      return
+    end
+
     # try and find by ID
     @user = Member.find_by_telegram_user from['id']
 

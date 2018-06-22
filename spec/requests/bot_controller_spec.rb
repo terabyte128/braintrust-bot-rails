@@ -15,7 +15,6 @@ RSpec.describe BotController, telegram_bot: :rails do
     }
   end
 
-  # TODO test removing users
   describe 'basic functionality' do
     it 'creates a chat group and user when a message is sent' do
       message = {
@@ -84,38 +83,127 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(m.last_name).to eq('bar')
       expect(m.chats.first.title).to eq('TestChat')
     end
-  end
 
-=begin
-  describe 'add command' do
-    it 'updates user information after being added with /add' do
-      expect { dispatch_command "add user2", create_message(1) }.to send_telegram_message(bot, /user2(.*)was added/)
+    it 'updates when a chat is renamed' do
+      message = {
+          from: {
+              id: 1234,
+              username: 'test_user'
+          },
+          chat: {
+              id: 2468,
+              title: 'TestChat'
+          }
+      }
 
-      u2 = Member.find_by_username('user2')
+      dispatch_message 'hello, world!', message
 
-      expect(u2.telegram_user).to be_falsey
-      expect(u2.first_name).to be_falsey
-      expect(u2.last_name).to be_falsey
+      chat = Chat.first
 
-      u2_message = create_message(2).stringify_keys
-      u2_message['from']['first_name'] = 'Firstname2'
-      u2_message['from']['last_name'] = 'Lastname2'
+      expect(chat.telegram_chat).to eq 2468
+      expect(chat.title).to eq "TestChat"
 
-      expect(Chat.first.members.find(u2.id)).not_to be_nil
+      message[:chat][:title] = "RenamedChat"
 
-      # should auto-update user2's information
-      dispatch_message 'hello', u2_message
+      dispatch_message 'hello, world!', message
 
-      u2.reload
+      chat.reload
 
-      expect(u2.telegram_user).to eq(992)
-      expect(u2.first_name).to eq('Firstname2')
-      expect(u2.last_name).to eq('Lastname2')
+      expect(chat.telegram_chat).to eq 2468
+      expect(chat.title).to eq "RenamedChat"
+    end
+
+    it 'adds new users when a different user adds them to the chat' do
+      new_chat_members = create_message(1)
+      new_chat_members[:new_chat_members] = Array.new
+
+      (2..6).each do |i|
+        new_chat_members[:new_chat_members] << {
+            id: "1234#{i}",
+            username: "test_user#{i}"
+        }
+      end
+
+      expected_users = (2..6).map do |i|
+        "test_user#{i}"
+      end
+
+      expect { dispatch_message '', new_chat_members }.to send_telegram_message(bot, Regexp.new(expected_users.to_sentence))
+
+      expect(Chat.all.size).to eq 1
+      expect(Chat.first.members.all.size).to eq 6
+    end
+
+    it 'does not add users who are bots' do
+      fake_bot = create_message(1)
+      fake_bot[:from][:is_bot] = true
+      fake_bot[:from][:username] = "NotARealBot"
+
+      adder = create_message(2)
+      adder[:new_chat_members] = Array.new
+      adder[:new_chat_members] << fake_bot[:from]
+
+      dispatch_message '', create_message(2)
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 1
+
+      dispatch_message 'I love bots!', adder
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 1
+
+      dispatch_message 'I am a bot!', fake_bot
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 1
+    end
+
+    it 'lists chat members' do
+      m1 = create_message(1)
+      m1[:from][:first_name] = "f1"
+      m1[:from][:last_name] = "l1"
+
+      m2 = create_message(2)
+      m2[:from][:first_name] = "f2"
+
+      m3 = create_message(3)
+
+      expect { dispatch_message '', m1 }.to send_telegram_message(bot, /f1 l1 was automatically/)
+      expect { dispatch_message '', m2 }.to send_telegram_message(bot, /f2 was automatically/)
+      expect { dispatch_message '', m3 }.to send_telegram_message(bot, /user3 was automatically/)
+
+      expect { dispatch_command 'members', m1 }.to send_telegram_message(bot, /f1(.*)l1(.*)f2(.*)and(.*)user3/)
+    end
+
+    it 'updates users without IDs' do
+      dispatch_message '', create_message(2)
+
+      m = Chat.first.members.create! username: "user1"
+      expect(m.telegram_user).to be_falsey
+
+      dispatch_message '', create_message(1)
+
+      m.reload
+
+      expect(m.telegram_user).to eq(991)
+    end
+
+    it 'updates users without usernames' do
+      dispatch_message '', create_message(2)
+
+      m = Chat.first.members.create! telegram_user: 991
+      expect(m.username).to be_falsey
+
+      dispatch_message '', create_message(1)
+
+      m.reload
+
+      expect(m.username).to eq('user1')
     end
   end
-=end
 
-  describe 'summoning functionality' do
+  describe 'summoning' do
 
     it 'summons all users in a chat group' do
       (1..5).to_a.reverse.each do |i|
@@ -247,6 +335,28 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(q.content).to match(/This is a test quote/)
       expect(q.author).to match(/Test user/)
     end
+
+    it 'gives feedback for malformed commands' do
+      expect { dispatch_command 'sq', create_message(1) }.to(
+          send_telegram_message(bot, /Usage/)
+      )
+
+      expect { dispatch_command 'sq foo && bar && baz && quux', create_message(1) }.to(
+          send_telegram_message(bot, /Usage/)
+      )
+    end
+
+    it 'works with /quote command' do
+      expect { dispatch_command 'quote This is a test quote && Test user', create_message(1) }.to(
+          send_telegram_message(bot, /Your quote was saved/)
+      )
+
+      q = Chat.first.quotes.first
+
+      expect(q.member).to eq(Chat.first.members.first)
+      expect(q.content).to match(/This is a test quote/)
+      expect(q.author).to match(/Test user/)
+    end
   end
 
   describe 'retrieving quotes' do
@@ -268,6 +378,10 @@ RSpec.describe BotController, telegram_bot: :rails do
 
     it 'handles no quotes gracefully' do
       expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
+    end
+
+    it 'works with /quote command when given no arguments' do
+      expect { dispatch_command 'quote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
     end
   end
 
@@ -355,12 +469,90 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       dispatch_message('message in the way!!!', create_message(2))
 
+      expect { dispatch_message '/sp', message }.to send_telegram_message(bot, /Your photo was saved/)
+
+      p = Chat.first.photos.first
+
+      expect(p.telegram_photo).to eq('largestphoto')
+      expect(Member.first.photos.first).to eq(p)
+    end
+  end
+
+  describe 'retrieving photos' do
+    it 'retrieves a photo with no caption' do
+      message = create_message(1).stringify_keys
+
+      msg_with_photo = message.clone
+
+      msg_with_photo['photo'] = [
+          {
+              'file_size': 128,
+              'file_id': 'smallerphoto'
+          },
+          {
+              'file_size': 512,
+              'file_id': 'largestphoto'
+          },
+          {
+              'file_size': 256,
+              'file_id': 'largerphoto'
+          },
+      ]
+
+      dispatch_message('this is a photo', msg_with_photo)
+
       expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo was saved/)
 
       p = Chat.first.photos.first
 
       expect(p.telegram_photo).to eq('largestphoto')
       expect(Member.first.photos.first).to eq(p)
+
+      expect { dispatch_message '/getphoto', create_message(1) }
+          .to (make_telegram_request(bot, :sendPhoto).with(photo: 'largestphoto', caption: '', chat_id: 2468))
+    end
+
+    it 'retrieves a photo with a caption' do
+      message = create_message(1).stringify_keys
+
+      msg_with_photo = message.clone
+
+      msg_with_photo['photo'] = [
+          {
+              'file_size': 128,
+              'file_id': 'smallerphoto'
+          },
+          {
+              'file_size': 512,
+              'file_id': 'largestphoto'
+          },
+          {
+              'file_size': 256,
+              'file_id': 'largerphoto'
+          },
+      ]
+
+      dispatch_message('this is a photo', msg_with_photo)
+
+      expect { dispatch_message '/sendphoto I am a caption', message }.to send_telegram_message(bot, /Your photo was saved/)
+
+      p = Chat.first.photos.first
+
+      expect(p.telegram_photo).to eq('largestphoto')
+      expect(Member.first.photos.first).to eq(p)
+
+      expect { dispatch_message '/getphoto', create_message(1) }
+          .to (make_telegram_request(bot, :sendPhoto).with(photo: 'largestphoto', caption: 'I am a caption', chat_id: 2468))
+    end
+
+    it 'handles no photos gracefully' do
+      expect { dispatch_message '/getphoto', create_message(1) }
+          .to (send_telegram_message(bot, /You don't have any photos/))
+    end
+
+    it 'works with alternate command /gp' do
+      expect { dispatch_message '/gp', create_message(1) }
+          .to (send_telegram_message(bot, /You don't have any photos/))
     end
   end
 
@@ -374,7 +566,36 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect { dispatch_command 'quotes disable' }.to send_telegram_message(bot, /Quotes disabled/)
       expect(Chat.first.quotes_enabled).to be_falsey
     end
+
+    it 'handles bogus commands' do
+      expect { dispatch_command 'quotes' }.to send_telegram_message(bot, /Usage/)
+      expect { dispatch_command 'quotes fasdf adsjh33' }.to send_telegram_message(bot, /Usage/)
+      expect { dispatch_command 'quotes fasdf' }.to send_telegram_message(bot, /Usage/)
+    end
   end
 
-  # TODO test 8ball, auto-adding new members as they're added to the chat (i.e. not on their first message)
+  describe 'using 8ball' do
+    it 'correctly handles empty 8ball' do
+      expect { dispatch_command '8ball', create_message(1) }.to send_telegram_message(bot, /You've got no answers/)
+    end
+
+    it 'gives sage advice when the 8ball is rolled' do
+      c = Chat.create! telegram_chat: '2468'
+      c.eight_ball_answers.create! answer: "Some great advice"
+      c.eight_ball_answers.create! answer: "Some amazing advice"
+
+      expect { dispatch_command '8ball', create_message(1) }.to send_telegram_message(bot, /(great)|(amazing)/)
+    end
+  end
+
+  describe 'predicting user luck' do
+    it 'responds to /luck' do
+      2.times do |i|
+        dispatch_message('', create_message(i))
+      end
+
+      expect { dispatch_command 'luck', create_message(1) }.to send_telegram_message(bot, /user0/)
+      expect { dispatch_command 'luck', create_message(1) }.to send_telegram_message(bot, /user1/)
+    end
+  end
 end

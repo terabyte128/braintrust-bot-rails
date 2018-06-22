@@ -21,9 +21,10 @@ class AlexasController < ApplicationController
     else
       response_text = 'You need to register your Alexa device.'
 
-      # create a new Alexa that can later be associated to a chat
-      new_alexa = Alexa.new device_user: request.raw_post
-      new_alexa.save
+      unless @alexa
+        # create a new Alexa that can later be associated to a chat
+        Alexa.create device_user: request.raw_post
+      end
     end
 
     render json: { 'text': response_text }

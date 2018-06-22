@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180618183510) do
+ActiveRecord::Schema.define(version: 20180622051442) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(version: 20180618183510) do
   end
 
   create_table "chats", force: :cascade do |t|
-    t.string "telegram_chat", null: false
+    t.integer "telegram_chat", limit: 8, null: false
     t.boolean "quotes_enabled", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -111,4 +111,5 @@ ActiveRecord::Schema.define(version: 20180618183510) do
     t.index ["chat_id"], name: "index_quotes_on_chat_id"
     t.index ["member_id"], name: "index_quotes_on_member_id"
   end
+
 end
