@@ -201,6 +201,45 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       expect(m.username).to eq('user1')
     end
+
+    it 'adds users without usernames' do
+      message = {
+          from: {
+              id: 1234,
+              first_name: 'foo',
+              last_name: 'bar'
+          },
+          chat: {
+              id: 2468,
+              title: 'TestChat'
+          }
+      }
+
+      expect { dispatch_message '', message }.to send_telegram_message(bot, /foo bar(.*)add a username/)
+    end
+
+    it 'adds new users without usernames when a different user adds them to the chat' do
+      new_chat_members = create_message(1)
+      new_chat_members[:new_chat_members] = Array.new
+
+      (2..6).each do |i|
+        new_chat_members[:new_chat_members] << {
+            id: "1234#{i}",
+            first_name: "first#{i}"
+        }
+      end
+
+      expected_users = (2..6).map do |i|
+        "first#{i}\\*"
+      end
+
+      expect { dispatch_message '', new_chat_members }.to(
+          send_telegram_message(bot, Regexp.new("#{expected_users.to_sentence}(.*)should", Regexp::MULTILINE))
+      )
+
+      expect(Chat.all.size).to eq 1
+      expect(Chat.first.members.all.size).to eq 6
+    end
   end
 
   describe 'summoning' do
@@ -594,8 +633,9 @@ RSpec.describe BotController, telegram_bot: :rails do
         dispatch_message('', create_message(i))
       end
 
-      expect { dispatch_command 'luck', create_message(1) }.to send_telegram_message(bot, /user0/)
-      expect { dispatch_command 'luck', create_message(1) }.to send_telegram_message(bot, /user1/)
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new("50(.*)user0(.*)50(.*)user1", Regexp::MULTILINE))
+      )
     end
   end
 end

@@ -282,21 +282,24 @@ class BotController < Telegram::Bot::UpdatesController
     @chat.save
   end
 
-  # if the message contains newly added chat members, then add them to the chat automatically
+  # if the message contains newuply added chat members, then add them to the chat automatically
   def add_members
     if update.dig('message', 'new_chat_members')
       added = []
+      no_username = false
 
       update['message']['new_chat_members'].each do |m|
+        next if m['is_bot']
 
-        next if !m['username'].present? || m['is_bot']
+        no_username = !m['username'].present?
 
         new_member = Member.find_by_telegram_user m['id']
-        new_member ||= Member.find_by_username m['username'].downcase
-        new_member ||= Member.new username: m['username'], telegram_user: m['id']
+        new_member ||= Member.find_by_username m['username'].downcase if m['username'].present?
+        new_member ||= Member.new telegram_user: m['id']
 
         new_member.first_name = m['first_name'] if m['first_name'].present?
         new_member.last_name = m['last_name'] if m['last_name'].present?
+        new_member.username = m['username'] if m['username'].present?
 
         unless new_member.chats.exists?(@chat.id)
           new_member.chats << @chat
@@ -307,7 +310,20 @@ class BotController < Telegram::Bot::UpdatesController
       end
 
       unless added.empty?
-        respond_with :message, text: "❤️ #{added.map {|a| pretty_name(a)}.to_sentence} #{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
+
+
+        pretty_users = added.map do |a|
+          result = pretty_name(a)
+          # notify users that they should add a username
+          result << '*' unless a.username.present?
+          result
+        end
+
+        message = "#{added.size == 1 ? 'was' : 'were'} automatically added to the chat group."
+
+        message << "\n\n<b>*</b> should add a username before they can be included in summons." if no_username
+
+        respond_with :message, text: "❤️ #{pretty_users.to_sentence} #{message}"
       end
     end
   end
@@ -343,7 +359,10 @@ class BotController < Telegram::Bot::UpdatesController
     # add new members automatically
     unless @user.chats.exists?(@chat.id)
       @user.chats << @chat
-      respond_with :message, text: "❤️ #{pretty_name(@user)} was automatically added to the chat group."
+      response = "❤️ #{pretty_name(@user)} was automatically added to the chat group."
+      response << " (They should add a username before they can be included in summons.)" unless @user.username.present?
+
+      respond_with(:message, text: response)
     end
 
     unless @user.save
