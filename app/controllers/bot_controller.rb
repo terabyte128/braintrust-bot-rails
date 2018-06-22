@@ -189,7 +189,7 @@ class BotController < Telegram::Bot::UpdatesController
 
   # get all members in the chat group
   def members!
-    chat_members = @chat.members.map { |m| "<b>#{pretty_name(m)}</b>" }
+    chat_members = @chat.members.map { |m| "#{pretty_name(m, true)}" }
     respond_with :message, text: "📜 Chat group members: #{chat_members.sort.to_sentence}", parse_mode: :html
   end
 
@@ -311,7 +311,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       unless added.empty?
         pretty_users = added.map do |a|
-          result = pretty_name(a)
+          result = pretty_name(a, true)
           # notify users that they should add a username
           result << "<b>*</b>" unless a.username.present?
           result
@@ -338,7 +338,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       unless member.nil?
         @chat.members.delete member
-        respond_with :message, text: "💔 #{pretty_name(member)} was automatically removed from the chat group."
+        respond_with :message, text: "💔 #{pretty_name(member, true)} was automatically removed from the chat group."
       end
     end
   end
@@ -374,7 +374,7 @@ class BotController < Telegram::Bot::UpdatesController
     # add new members automatically
     unless @user.chats.exists?(@chat.id)
       @user.chats << @chat
-      response = "❤️ #{pretty_name(@user)} was automatically added to the chat group."
+      response = "❤️ #{pretty_name(@user, true)} was automatically added to the chat group."
       response << " (They should add a username before they can be included in summons.)" unless @user.username.present?
 
       respond_with(:message, text: response)

@@ -27,7 +27,7 @@ RSpec.describe BotController, telegram_bot: :rails do
               title: 'TestChat'
           }
       }
-      expect { dispatch_message 'Hello', message }.to send_telegram_message(bot, /test_user was automatically added to the chat group/)
+      expect { dispatch_message 'Hello', message }.to send_telegram_message(bot, /<b>test_user<\/b> was automatically added to the chat group/)
 
       # verify that member and chat were created
       expect(Member.where(username: 'test_user', telegram_user: '1234')).to exist
@@ -125,7 +125,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       end
 
       expected_users = (2..6).map do |i|
-        "test_user#{i}"
+        "<b>test_user#{i}</b>"
       end
 
       expect { dispatch_message '', new_chat_members }.to send_telegram_message(bot, Regexp.new(expected_users.to_sentence))
@@ -169,9 +169,9 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       m3 = create_message(3)
 
-      expect { dispatch_message '', m1 }.to send_telegram_message(bot, /f1 l1 was automatically/)
-      expect { dispatch_message '', m2 }.to send_telegram_message(bot, /f2 was automatically/)
-      expect { dispatch_message '', m3 }.to send_telegram_message(bot, /user3 was automatically/)
+      expect { dispatch_message '', m1 }.to send_telegram_message(bot, /<b>f1 l1<\/b> was automatically/)
+      expect { dispatch_message '', m2 }.to send_telegram_message(bot, /<b>f2<\/b> was automatically/)
+      expect { dispatch_message '', m3 }.to send_telegram_message(bot, /<b>user3<\/b> was automatically/)
 
       expect { dispatch_command 'members', m1 }.to send_telegram_message(bot, /f1(.*)l1(.*)f2(.*)and(.*)user3/)
     end
@@ -230,7 +230,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       end
 
       expected_users = (2..6).map do |i|
-        "first#{i}<b>\\*</b>"
+        "<b>first#{i}</b><b>\\*</b>"
       end
 
       expect { dispatch_message '', new_chat_members }.to(
@@ -252,7 +252,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       removal_message = create_message(1)
       removal_message[:left_chat_member] = create_message(2)[:from]
 
-      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /user2 was automatically removed/)
+      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /<b>user2<\/b> was automatically removed/)
 
       expect(Chat.all.size).to eq 1
       expect(Member.all.size).to eq 2
@@ -276,7 +276,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       removal_message = create_message(1)
       removal_message[:left_chat_member] = removed_user[:from]
 
-      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /sadboi was automatically removed/)
+      expect { dispatch_message '', removal_message }.to send_telegram_message(bot, /<b>sadboi<\/b> was automatically removed/)
 
       expect(Chat.all.size).to eq 1
       expect(Member.all.size).to eq 2

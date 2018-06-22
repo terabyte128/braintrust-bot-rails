@@ -9,16 +9,18 @@ module ApplicationHelpers
   end
 
   # try first last, then first, then username
-  def pretty_name(user)
+  def pretty_name(user, bold=false)
     if user.first_name.present?
       if user.last_name.present?
-        "#{user.first_name} #{user.last_name}"
+        formatted = "#{user.first_name} #{user.last_name}"
       else
-        user.first_name
+        formatted = user.first_name
       end
     else
-      user.username
+      formatted = user.username
     end
+
+    return "<b>#{formatted}</b>" if bold else formatted
   end
 
   # Given a list of usernames, remove leading @s, remove duplicates, sort and downcase them
