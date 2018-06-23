@@ -36,7 +36,7 @@ namespace :braintrust_bot do
 
   desc "Import database entries from BrainTrust Bot 1.0"
   task import_old_database: :environment do
-    DATABASE_NAME = 'btb_corpus'
+    DATABASE_NAME = ENV['OLD_DB']
     FILE_PATH = "#{Rails.root.join('tmp')}/temp.csv"
 
     def command(table)
