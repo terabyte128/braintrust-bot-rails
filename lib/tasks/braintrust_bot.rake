@@ -40,7 +40,7 @@ namespace :braintrust_bot do
     FILE_PATH = "/tmp/temp.csv"
 
     def command(table)
-      "psql -c \"COPY (SELECT * FROM #{table}) TO '#{FILE_PATH}' WITH CSV DELIMITER '|';\" #{DATABASE_NAME}"
+      "psql -c \"COPY (SELECT * FROM #{table}) TO STDOUT WITH CSV DELIMITER '|';\" #{DATABASE_NAME} > #{FILE_PATH}"
     end
 
     puts "using command #{command('example_table')}"
