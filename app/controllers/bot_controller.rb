@@ -81,6 +81,8 @@ class BotController < Telegram::Bot::UpdatesController
           url = "https://api.telegram.org/file/bot#{ENV['BOT_TOKEN']}/#{file_info['result']['file_path']}"
           ext = file_info['result']['file_path'].partition('.').last
 
+          ext = "jpg" unless ext.present?
+
           # make a directory with this chat ID if it doesn't already exist
           dirname = Rails.root.join('telegram_images', @chat.id.to_s).to_s
           unless File.directory?(dirname)

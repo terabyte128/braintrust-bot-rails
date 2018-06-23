@@ -143,4 +143,39 @@ namespace :braintrust_bot do
 
     try_delete
   end
+
+  desc "Download photos from Telegram"
+  task download_photos: :environment do
+    bot = Telegram::Bot::Client.new(ENV['BOT_TOKEN'])
+
+    Chat.all.each do |chat|
+      chat.photos.all.each do |photo|
+        puts "downloading photo #{photo.id}"
+
+        dirname = Rails.root.join('telegram_images', chat.id.to_s).to_s
+
+        # skip already saved photos
+        next unless Dir.glob(dirname + "/#{photo.id}*").empty?
+
+        # prepare to download the file
+        file_info = bot.get_file(file_id: photo.telegram_photo)
+
+        puts "got file info: #{file_info}"
+
+        url = "https://api.telegram.org/file/bot#{ENV['BOT_TOKEN']}/#{file_info['result']['file_path']}"
+        ext = file_info['result']['file_path'].partition('.').last
+
+        ext = "jpg" unless ext.present?
+
+        # make a directory with this chat ID if it doesn't already exist
+        unless File.directory?(dirname)
+          FileUtils.mkdir_p(dirname)
+        end
+
+        # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
+        dl_image = open(url)
+        IO.copy_stream(dl_image, dirname + "/#{photo.id}.#{ext}")
+      end
+    end
+  end
 end
