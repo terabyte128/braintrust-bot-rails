@@ -243,7 +243,7 @@ class BotController < Telegram::Bot::UpdatesController
     @chat.save
   end
 
-  def on_8ball!
+  def on_8ball!(*)
     answer = @chat.eight_ball_answers.sample
 
     if answer.nil?
