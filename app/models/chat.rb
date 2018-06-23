@@ -1,5 +1,6 @@
 class Chat < ApplicationRecord
   validates_presence_of :telegram_chat
+  validates_uniqueness_of :telegram_chat
   has_many :quotes
   has_many :chat_members
   has_many :members, through: :chat_members

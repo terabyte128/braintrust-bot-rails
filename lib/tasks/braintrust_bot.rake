@@ -43,6 +43,8 @@ namespace :braintrust_bot do
       "psql -c \"COPY (SELECT * FROM #{table}) TO '#{FILE_PATH}' WITH CSV DELIMITER '|';\" #{DATABASE_NAME}"
     end
 
+    puts "using command #{command('example_table')}"
+
     def try_delete
       File.delete FILE_PATH if File.exist?(FILE_PATH)
     end
