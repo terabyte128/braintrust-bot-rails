@@ -72,6 +72,7 @@ class BotController < Telegram::Bot::UpdatesController
       new_photo = @chat.photos.new member: @user, telegram_photo: session[:photo], caption: args.join(' ')
 
       if new_photo.save
+        cached_response = respond_with :message, text: "🌄 Your photo is being saved..."
 
         # since this involves downloading a real photo from Telegram, it's not really something we can test...
         unless Rails.env == 'test'
@@ -89,10 +90,13 @@ class BotController < Telegram::Bot::UpdatesController
           # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
           dl_image = open(url)
           IO.copy_stream(dl_image, dirname + "/#{new_photo.id}.#{ext}")
+
+          bot.public_send('edit_message_text', text: "🌄 Your photo was saved!",
+                          chat_id: cached_response['result']['chat']['id'],
+                          message_id: cached_response['result']['message_id'])
         end
 
         session.delete :photo
-        respond_with :message, text: "🌄 Your photo was saved!"
       else
         respond_with :message, text: "🤬 Failed to save photo: #{new_photo.errors.full_messages} (@SamWolfson should fix this)"
       end
@@ -305,7 +309,7 @@ class BotController < Telegram::Bot::UpdatesController
           new_member.chats << @chat
         end
 
-        new_member.save
+        new_member.save!
         added << new_member
       end
 

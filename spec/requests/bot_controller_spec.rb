@@ -224,7 +224,7 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       (2..6).each do |i|
         new_chat_members[:new_chat_members] << {
-            id: "1234#{i}",
+            id: 12340 + i,
             first_name: "first#{i}"
         }
       end
@@ -282,6 +282,49 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(Member.all.size).to eq 2
       expect(Chat.first.members.size).to eq 1
       expect(Chat.first.members.first.telegram_user).to eq 991
+    end
+
+    it 'does not duplicate a user with a telegram ID in multiple chats' do
+      dispatch_message '', create_message(1)
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 1
+      expect(Chat.first.members.size).to eq 1
+
+      new_chat = create_message(1)
+      new_chat[:chat][:id] = 2469
+
+      dispatch_message '', new_chat
+
+      expect(Chat.all.size).to eq 2
+      expect(Member.all.size).to eq 1
+      expect(Chat.first.members.size).to eq 1
+      expect(Chat.second.members.size).to eq 1
+
+      expect(Chat.second.members.first).to eq(Chat.first.members.first)
+    end
+
+    it 'does not duplicate a user without a telegram ID in multiple chats' do
+      m = create_message(1)
+      m[:from].delete(:telegram_user)
+
+      dispatch_message '', m
+
+      expect(Chat.all.size).to eq 1
+      expect(Member.all.size).to eq 1
+      expect(Chat.first.members.size).to eq 1
+
+      new_chat = m
+      new_chat[:chat][:id] = 2469
+
+      dispatch_message '', new_chat
+
+      expect(Chat.all.size).to eq 2
+      expect(Member.all.size).to eq 1
+      expect(Chat.first.members.size).to eq 1
+      expect(Chat.second.members.size).to eq 1
+
+      expect(Chat.second.members.first).to eq(Chat.first.members.first)
     end
   end
 
@@ -490,7 +533,7 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       dispatch_message('this is a photo', msg_with_photo)
 
-      expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo was saved/)
+      expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo is being saved/)
 
       p = Chat.first.photos.first
 
@@ -551,7 +594,7 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       dispatch_message('message in the way!!!', create_message(2))
 
-      expect { dispatch_message '/sp', message }.to send_telegram_message(bot, /Your photo was saved/)
+      expect { dispatch_message '/sp', message }.to send_telegram_message(bot, /Your photo is being saved/)
 
       p = Chat.first.photos.first
 
@@ -583,7 +626,7 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       dispatch_message('this is a photo', msg_with_photo)
 
-      expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo was saved/)
+      expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo is being saved/)
 
       p = Chat.first.photos.first
 
@@ -616,7 +659,7 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       dispatch_message('this is a photo', msg_with_photo)
 
-      expect { dispatch_message '/sendphoto I am a caption', message }.to send_telegram_message(bot, /Your photo was saved/)
+      expect { dispatch_message '/sendphoto I am a caption', message }.to send_telegram_message(bot, /Your photo is being saved/)
 
       p = Chat.first.photos.first
 

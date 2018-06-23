@@ -20,18 +20,10 @@ module ApplicationHelpers
       formatted = user.username
     end
 
-    return "<b>#{formatted}</b>" if bold else formatted
-  end
-
-  # Given a list of usernames, remove leading @s, remove duplicates, sort and downcase them
-  def process_users(user_names)
-    # remove leading @ and downcase
-    user_names = user_names.map { |u| if u.start_with? '@' then u[1..-1].downcase else u.downcase end }
-
-    # filter out blank users
-    user_names = user_names.select { |u| !u.blank? }
-
-    # remove duplicates
-    user_names.uniq.sort
+    if bold
+      "<b>#{formatted}</b>"
+    else
+      formatted
+    end
   end
 end
