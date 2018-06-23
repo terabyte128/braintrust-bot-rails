@@ -29,3 +29,5 @@
 # ignore all the telegram images but keep the .keep file
 telegram_images/*
 !telegram_images/.keep
+
+.DS_Store
