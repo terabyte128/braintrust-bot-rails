@@ -12,6 +12,8 @@ ActiveAdmin.register Member do
 #   permitted
 # end
 
+  remove_filter :chat_members
+
   permit_params :chat_id, :username, :luck
 
 end

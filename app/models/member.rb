@@ -10,4 +10,8 @@ class Member < ApplicationRecord
   # either username or a telegram ID is required
   validates_presence_of :username, unless: Proc.new { |m| m.telegram_user.present? }
   validates_presence_of :telegram_user, unless: Proc.new { |m| m.username.present? }
+
+  def display_name
+    pretty_name(self)
+  end
 end

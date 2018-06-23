@@ -12,6 +12,7 @@ ActiveAdmin.register Chat do
 #   permitted
 # end
 
+  remove_filter :chat_members
   permit_params :telegram_chat, :title, :quotes_enabled
 
 end

@@ -44,4 +44,8 @@ class Chat < ApplicationRecord
       quotes.sample
     end
   end
+
+  def display_name
+    title.present? ? title : telegram_chat
+  end
 end

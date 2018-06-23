@@ -29,9 +29,10 @@ ActiveAdmin.register_page "Dashboard" do
       column do
         panel 'Chat Statistics' do
           table_for Chat.all do
-            column('Chat Title') { |c| link_to(c.title, admin_chat_path(c)) }
-            column('Quotes') { |c| c.quotes.count }
+            column('Chat Title') { |c| link_to(c.display_name, admin_chat_path(c)) }
             column('Members') { |c| c.members.count }
+            column('Quotes') { |c| c.quotes.count }
+            column('Photos') { |c| c.photos.count }
           end
         end
       end
