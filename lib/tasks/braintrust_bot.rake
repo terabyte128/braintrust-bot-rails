@@ -37,7 +37,7 @@ namespace :braintrust_bot do
   desc "Import database entries from BrainTrust Bot 1.0"
   task import_old_database: :environment do
     DATABASE_NAME = ENV['OLD_DB']
-    FILE_PATH = "#{Rails.root.join('tmp')}/temp.csv"
+    FILE_PATH = "/tmp/temp.csv"
 
     def command(table)
       "psql -c \"COPY (SELECT * FROM #{table}) TO '#{FILE_PATH}' WITH CSV DELIMITER '|';\" #{DATABASE_NAME}"
@@ -140,5 +140,7 @@ namespace :braintrust_bot do
       chat = Chat.where(telegram_chat: tokens[2]).first_or_create!
       chat.eight_ball_answers.create! answer: tokens[1]
     end
+
+    try_delete
   end
 end
