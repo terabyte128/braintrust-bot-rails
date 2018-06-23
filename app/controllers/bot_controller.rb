@@ -305,7 +305,7 @@ class BotController < Telegram::Bot::UpdatesController
         new_member.last_name = m['last_name'] if m['last_name'].present?
         new_member.username = m['username'].downcase if m['username'].present?
 
-        unless new_member.chats.exists?(@chat.id)
+        unless new_member.chats.include?(@chat.id)
           new_member.chats << @chat
         end
 

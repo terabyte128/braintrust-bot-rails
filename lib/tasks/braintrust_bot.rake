@@ -1,5 +1,6 @@
 require "#{Rails.root}/lib/helpers/application_helpers"
 include ApplicationHelpers
+require 'csv'
 
 namespace :braintrust_bot do
   desc "Send a quote to all chats that request a quote every day (with 1/3 probability)"
@@ -36,7 +37,7 @@ namespace :braintrust_bot do
   desc "Import database entries from BrainTrust Bot 1.0"
   task import_old_database: :environment do
     DATABASE_NAME = 'btb_corpus'
-    FILE_PATH = "Rails.root.join('tmp')/temp.csv"
+    FILE_PATH = "#{Rails.root.join('tmp')}/temp.csv"
 
     def command(table)
       "psql -c \"COPY (SELECT * FROM #{table}) TO '#{FILE_PATH}' WITH CSV DELIMITER '|';\" #{DATABASE_NAME}"
@@ -47,11 +48,8 @@ namespace :braintrust_bot do
     end
 
     def process_file
-      File.open(FILE_PATH) do |f|
-        f.each_line do |line|
-          splat = line.split '|'
-          yield(splat)
-        end
+      CSV.foreach(FILE_PATH, col_sep: '|') do |row|
+        yield(row)
       end
     end
 
@@ -59,6 +57,7 @@ namespace :braintrust_bot do
     try_delete
     system command('braintrust_bot_quotechat')
     process_file do |tokens|
+      puts "adding chat #{tokens}"
       Chat.create! telegram_chat: tokens[1], quotes_enabled: tokens[2] == 't'
     end
 
@@ -66,19 +65,37 @@ namespace :braintrust_bot do
     try_delete
     system command('braintrust_bot_chatmember')
     process_file do |tokens|
+      puts "adding member #{tokens}"
+
       chat = Chat.where(telegram_chat: tokens[2]).first_or_create!
-      chat.members.create! username: tokens[1]
+      member = Member.where(username: tokens[1].downcase).first_or_create!
+
+      unless member.chats.include?(chat)
+        member.chats << chat
+      end
     end
 
     try_delete
     system command('braintrust_bot_quotestorage')
     process_file do |tokens|
+      puts "adding quote #{tokens}"
       chat = Chat.where(telegram_chat: tokens[1]).first_or_create!
       quote = chat.quotes.new content: tokens[2],
                               author: tokens[4],
-                              created_at: DateTime.new(tokens[5])
+                              created_at: DateTime.parse(tokens[5]),
+                              location_confirmed: true
 
-      quote.sender = tokens[7] if tokens[7].present?
+      # sender
+      if tokens[7].present?
+        sender = Member.where(username: tokens[7].downcase).first_or_create!
+
+        quote.member = sender
+
+        unless sender.chats.include?(chat)
+          sender.chats << chat
+        end
+      end
+
       quote.context = tokens[3] if tokens[3].present?
 
       quote.save!
@@ -87,10 +104,39 @@ namespace :braintrust_bot do
     try_delete
     system command('braintrust_bot_photo')
     process_file do |tokens|
+      # skip unconfirmed photos
+      next unless tokens[6] == "t"
+
+      puts "adding photo #{tokens}"
+
       chat = Chat.where(telegram_chat: tokens[1]).first_or_create!
-      # photo = chat.photos.new telegram_photo: tokens[5],
 
+      p = chat.photos.new telegram_photo: tokens[5],
+                          created_at: DateTime.parse(tokens[4])
 
+      if tokens[7].present?
+        sender = Member.where(username: tokens[7].downcase).first_or_create!
+        p.member = sender
+
+        unless sender.chats.include?(chat)
+          sender.chats << chat
+        end
+      end
+
+      if tokens[2].present?
+        p.caption = tokens[2]
+      end
+
+      p.save!
+    end
+
+    try_delete
+    system command('braintrust_bot_eightballanswer')
+    process_file do |tokens|
+      puts "adding 8 ball answer #{tokens}"
+
+      chat = Chat.where(telegram_chat: tokens[2]).first_or_create!
+      chat.eight_ball_answers.create! answer: tokens[1]
     end
   end
 end
