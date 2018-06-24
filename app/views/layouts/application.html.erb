@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>BraintrustBotRails</title>
+    <title><%= (yield :title).empty? ? 'BrainTrust Bot Rails' : (yield :title) %></title>
     <%= csrf_meta_tags %>
 
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>

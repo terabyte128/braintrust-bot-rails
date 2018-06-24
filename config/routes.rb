@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   telegram_webhook BotController
 
   root to: 'static_pages#index'
+  get '/:chat_id', to: 'static_pages#index', as: 'chat_statistics'
+
   post '/alexa', to: 'alexas#alexa'
 
   get '/get_photo/:id', to: 'static_pages#get_photo', as: 'get_photo'

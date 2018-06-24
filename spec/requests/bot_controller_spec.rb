@@ -383,6 +383,25 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       expect { dispatch_command 's', create_message(1) }.to send_telegram_message(bot, /^[(foo)|(@user1)]/)
     end
+
+    it 'increments summon count when a user summons' do
+      dispatch_message '', create_message(1)
+      expect(Member.first.chat_members.first.summons_performed).to eq 0
+
+      dispatch_command 's', create_message(1)
+      expect(Member.first.chat_members.first.summons_performed).to eq 1
+
+      dispatch_command 'summon', create_message(1)
+      expect(Member.first.chat_members.first.summons_performed).to eq 2
+
+      count = 3
+
+      BotController::PREFIXES.each do |prefix|
+        dispatch_message prefix, create_message(1)
+        expect(Member.first.chat_members.first.summons_performed).to eq count
+        count += 1
+      end
+    end
   end
 
   describe 'saving quotes' do
@@ -507,6 +526,14 @@ RSpec.describe BotController, telegram_bot: :rails do
 
     it 'works with /quote command when given no arguments' do
       expect { dispatch_command 'quote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
+    end
+
+    it 'bumps quote access count when retrieved' do
+      dispatch_command "sq testquote && sender", create_message(2)
+      expect(Quote.first.times_accessed).to eq 0
+
+      dispatch_command "gq", create_message(2)
+      expect(Quote.first.times_accessed).to eq 1
     end
   end
 
@@ -678,6 +705,43 @@ RSpec.describe BotController, telegram_bot: :rails do
     it 'works with alternate command /gp' do
       expect { dispatch_message '/gp', create_message(1) }
           .to (send_telegram_message(bot, /You don't have any photos/))
+    end
+
+    it 'bumps access count when retrieving a photo' do
+      message = create_message(1).stringify_keys
+
+      msg_with_photo = message.clone
+
+      msg_with_photo['photo'] = [
+          {
+              'file_size': 128,
+              'file_id': 'smallerphoto'
+          },
+          {
+              'file_size': 512,
+              'file_id': 'largestphoto'
+          },
+          {
+              'file_size': 256,
+              'file_id': 'largerphoto'
+          },
+      ]
+
+      dispatch_message('this is a photo', msg_with_photo)
+
+      expect { dispatch_message '/sendphoto', message }.to send_telegram_message(bot, /Your photo is being saved/)
+
+      p = Chat.first.photos.first
+
+      expect(p.telegram_photo).to eq('largestphoto')
+      expect(Member.first.photos.first).to eq(p)
+      expect(p.times_accessed).to eq 0
+
+      expect { dispatch_message '/getphoto', create_message(1) }
+          .to (make_telegram_request(bot, :sendPhoto).with(photo: 'largestphoto', caption: '', chat_id: 2468))
+
+      p.reload
+      expect(p.times_accessed).to eq 1
     end
   end
 

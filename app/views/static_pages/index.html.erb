@@ -1,1 +1,83 @@
-Yes, it works!
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="#">BrainTrust Bot Statistics</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+            Select a Chat
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <% Chat.all.each do |chat| %>
+              <%= link_to chat.display_name, chat_statistics_path(chat.id), class: 'dropdown-item' %>
+            <% end %>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <span class="navbar-text">
+      <%= @chat.display_name if @chat %>
+    </span>
+  </div>
+</nav>
+<br>
+<div class="container">
+  <% if @chat %>
+    <div class="row">
+      <div class="col-md">
+        <h5>Quotes By Sender</h5>
+        <%= line_chart @chat.quotes.where.not(member: nil)
+                           .group(:member).count
+                           .sort { |a, b| b.second <=> a.second }
+                           .map {|x| [pretty_name(x.first), x.second] }, xtitle: 'Sender', ytitle: 'Sent Quotes', label: 'Sent Quotes' %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Quotes By Author</h5>
+        <%= line_chart @chat.quotes
+                           .group(:author).count
+                           .sort { |a, b| b.second <=> a.second }
+                           .select { |x| x.second > 1 }, xtitle: 'Author', ytitle: 'Authored Quotes', label: 'Authored Quotes' %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Quote Submission History</h5>
+        <%= line_chart @chat.quotes.group_by_month(:created_at, format: "%b %Y").count, xtitle: 'Month', ytitle: 'Quotes Submitted', label: 'Quotes Submitted' %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Quotes By Hour Of Day</h5>
+        <%= line_chart @chat.quotes.group_by_hour_of_day(:created_at, format: "%-l %P", day_start: 12).count, xtitle: "Hour", ytitle: "Quotes Submitted", label: "Quotes Submitted" %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Quotes By Day Of Week</h5>
+        <%= line_chart @chat.quotes.group_by_day_of_week(:created_at, format: "%A", week_start: :mon).count, xtitle: "Day Of Week", ytitle: "Quotes Submitted", label: "Quotes Submitted" %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Summons By Member</h5>
+        <%= line_chart @chat.chat_members.where.not(summons_performed: 0)
+                           .map {|m| [ pretty_name(m.member), m.summons_performed ] }
+                           .sort { |a, b| b.second <=> a.second }, xtitle: "Member", ytitle: "Summons Performed", label: "Summons Performed"  %>
+      </div>
+    </div>
+  <% else %>
+    <div class="row">
+      <div class="col-md">
+        <h5>Select a chat from the dropdown menu to get started.</h5>
+      </div>
+    </div>
+  <% end %>
+  <br>
+</div>

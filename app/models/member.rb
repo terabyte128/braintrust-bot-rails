@@ -14,4 +14,8 @@ class Member < ApplicationRecord
   def display_name
     pretty_name(self)
   end
+
+  def to_s
+    display_name
+  end
 end

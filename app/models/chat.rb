@@ -25,7 +25,7 @@ class Chat < ApplicationRecord
       end
 
       if markov.dictionary.empty?
-        self.quotes.sample
+        self.quotes.sample.increment! :times_accessed
       else
         author = self.quotes.sample.author
 
@@ -41,7 +41,7 @@ class Chat < ApplicationRecord
         quotes = self.quotes
       end
 
-      quotes.sample
+      self.quotes.sample.increment! :times_accessed
     end
   end
 

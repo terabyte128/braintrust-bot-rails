@@ -12,7 +12,7 @@ namespace :braintrust_bot do
 
     Chat.where(quotes_enabled: true).each do |chat|
       if dice.sample
-        quote = chat.quotes.sample
+        quote = chat.quotes.sample.increment! :times_accessed
 
         unless quote.nil?
           formatted = format_quote(quote.content, quote.author, quote.context, quote.created_at.year)

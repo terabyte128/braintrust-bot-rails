@@ -1,5 +1,10 @@
 class StaticPagesController < ApplicationController
   def index
+    if params[:chat_id]
+      @chat = Chat.find(params[:chat_id])
+    else
+      @chat = nil
+    end
   end
 
   def get_photo

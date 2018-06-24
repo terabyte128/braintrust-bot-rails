@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180623052648) do
+ActiveRecord::Schema.define(version: 20180624065845) do
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -56,6 +56,7 @@ ActiveRecord::Schema.define(version: 20180623052648) do
     t.integer "member_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "summons_performed", default: 0
     t.index ["chat_id", "member_id"], name: "index_chat_members_on_chat_id_and_member_id", unique: true
     t.index ["chat_id"], name: "index_chat_members_on_chat_id"
     t.index ["member_id"], name: "index_chat_members_on_member_id"
@@ -94,6 +95,7 @@ ActiveRecord::Schema.define(version: 20180623052648) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "member_id"
+    t.integer "times_accessed", default: 0
     t.index ["chat_id"], name: "index_photos_on_chat_id"
     t.index ["member_id"], name: "index_photos_on_member_id"
   end
@@ -109,6 +111,7 @@ ActiveRecord::Schema.define(version: 20180623052648) do
     t.decimal "latitude", precision: 12, scale: 7
     t.boolean "location_confirmed", default: false
     t.integer "member_id"
+    t.integer "times_accessed", default: 0
     t.index ["chat_id"], name: "index_quotes_on_chat_id"
     t.index ["member_id"], name: "index_quotes_on_member_id"
   end

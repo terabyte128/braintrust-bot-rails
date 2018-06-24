@@ -120,7 +120,7 @@ class BotController < Telegram::Bot::UpdatesController
     if photos.empty?
       respond_with :message, text: "😭 You don't have any photos! Use /sendphoto to add some.", parse_mode: :html
     else
-      photo = photos.sample
+      photo = photos.sample.increment! :times_accessed
       respond_with :photo, photo: photo.telegram_photo, caption: photo.caption
     end
   end
@@ -201,6 +201,10 @@ class BotController < Telegram::Bot::UpdatesController
 
   # send a summon to all messages in the chat group, with an optional message
   def summon!(*message)
+    if @user
+      @user.chat_members.find_by_chat_id(@chat.id).increment! :summons_performed
+    end
+
     chat_members = @chat.members
                        .select { |m| m.username.present? && m.username != from['username'].downcase }
                        .map { |m| "@#{m.username}" }
