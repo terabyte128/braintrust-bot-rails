@@ -121,27 +121,30 @@
       <div class="col-md">
         <h5>Quotes & Photos By Day Of Week</h5>
         <%= column_chart [
-                           {
-                               name: 'Quotes',
-                               data: @chat.quotes.group_by_day_of_week(:created_at, format: "%A", week_start: :mon)
-                                   .count.to_a
-                                   .map {|x| [x.first, (x.second * 100.0 / @chat.quotes.count).round(1)]}
-                           },
-                           {
-                               name: 'Photos',
-                               data: @chat.photos.group_by_day_of_week(:created_at, format: "%A", week_start: :mon)
-                                   .count.to_a
-                                   .map {|x| [x.first, (x.second * 100.0 / @chat.photos.count).round(1)]}
-                           }
-                       ],
-                       xtitle: "Hour", ytitle: "Percentage Submitted", suffix: '%' %>
+                             {
+                                 name: 'Quotes',
+                                 data: @chat.quotes.group_by_day_of_week(:created_at, format: "%A", week_start: :mon)
+                                     .count.to_a
+                                     .map {|x| [x.first, (x.second * 100.0 / @chat.quotes.count).round(1)]}
+                             },
+                             {
+                                 name: 'Photos',
+                                 data: @chat.photos.group_by_day_of_week(:created_at, format: "%A", week_start: :mon)
+                                     .count.to_a
+                                     .map {|x| [x.first, (x.second * 100.0 / @chat.photos.count).round(1)]}
+                             }
+                         ],
+                         xtitle: "Hour", ytitle: "Percentage Submitted", suffix: '%' %>
       </div>
     </div>
     <div class="row">
       <div class="col-md">
         <h5>Quotes With Context</h5>
-        <% n_with_context = @chat.quotes.where.not(context: '').count; n_without_context = @chat.quotes.count - n_with_context %>
-        <%= pie_chart [['Quotes With Context', n_with_context], ['Quotes Without Context', n_without_context]] %>
+        <% n_with_context = @chat.quotes.where.not(context: '').count; total = @chat.quotes.count %>
+        <%= pie_chart [
+                          [ 'Quotes With Context', (n_with_context * 100.0 / total).round(1) ],
+                          ['Quotes Without Context', ((total - n_with_context) * 100.0 / total).round(1)]
+                      ], suffix: '%' %>
       </div>
     </div>
 
