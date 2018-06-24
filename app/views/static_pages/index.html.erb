@@ -28,6 +28,7 @@
 <br>
 <div class="container">
   <% if @chat %>
+    <% provide(:title, "Statistics For #{@chat.display_name}") %>
     <div class="row">
       <div class="col-md">
         <h5>Quotes By Sender</h5>
@@ -73,6 +74,7 @@
       </div>
     </div>
   <% else %>
+    <% provide :title, 'Chat Statistics' %>
     <div class="row">
       <div class="col-md">
         <h5>Select a chat from the dropdown menu to get started.</h5>
