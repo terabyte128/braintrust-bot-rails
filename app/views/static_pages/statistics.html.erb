@@ -77,23 +77,24 @@
     <div class="row">
       <div class="col-md">
         <h5>Quote & Photo Submission History</h5>
+        <% max = 0 %>
         <%= line_chart [
                            {
                                name: 'Quotes',
                                data: @chat.quotes
                                    .group_by_month(:created_at, format: "%b %Y")
                                    .count.to_a
-                                   .map  {|x| [ x.first, (x.second * 100.0 / @chat.quotes.count).round(1) ] }
+                                   .map  {|x| current = (x.second * 100.0 / @chat.quotes.count).round(1); max = [current, max].max; [ x.first, current ] }
                            },
                            {
                                name: 'Photos',
                                data: @chat.photos
                                    .group_by_month(:created_at, format: "%b %Y")
                                    .count.to_a
-                                   .map { |x| [ x.first, (x.second * 100.0 / @chat.photos.count).round(1) ] }
+                                   .map  {|x| current = (x.second * 100.0 / @chat.photos.count).round(1); max = [current, max].max; [ x.first, current ] }
                            }
                        ],
-                       xtitle: 'Month', ytitle: 'Percentage Submitted', suffix: '%' %>
+                       xtitle: 'Month', ytitle: 'Percentage Submitted', suffix: '%', max: (max + 1).ceil(-1) %>
       </div>
     </div>
     <div class="row">
