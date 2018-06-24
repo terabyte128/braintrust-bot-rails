@@ -1,5 +1,8 @@
 class StaticPagesController < ApplicationController
   def index
+  end
+
+  def statistics
     if params[:chat_id]
       @chat = Chat.find(params[:chat_id])
     else
