@@ -512,11 +512,11 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(Chat.first.quotes.size).to eq(2)
 
       10.times do |_|
-        expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /(test0)|(test1)/)
+        expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /(Test0)|(Test1)/)
       end
 
       10.times do |_|
-        expect { dispatch_command 'gq', create_message(1) }.to send_telegram_message(bot, /(test0)|(test1)/)
+        expect { dispatch_command 'gq', create_message(1) }.to send_telegram_message(bot, /(Test0)|(Test1)/)
       end
     end
 

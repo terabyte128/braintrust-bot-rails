@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180624065845) do
+ActiveRecord::Schema.define(version: 20180629055057) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
@@ -63,7 +66,7 @@ ActiveRecord::Schema.define(version: 20180624065845) do
   end
 
   create_table "chats", force: :cascade do |t|
-    t.integer "telegram_chat", limit: 8, null: false
+    t.bigint "telegram_chat", null: false
     t.boolean "quotes_enabled", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -78,12 +81,20 @@ ActiveRecord::Schema.define(version: 20180624065845) do
     t.index ["chat_id"], name: "index_eight_ball_answers_on_chat_id"
   end
 
+  create_table "luck_histories", force: :cascade do |t|
+    t.bigint "member_id"
+    t.integer "luck"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_id"], name: "index_luck_histories_on_member_id"
+  end
+
   create_table "members", force: :cascade do |t|
     t.text "username"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "luck", default: 50
-    t.integer "telegram_user", limit: 8
+    t.bigint "telegram_user"
     t.string "first_name"
     t.string "last_name"
   end
@@ -116,4 +127,5 @@ ActiveRecord::Schema.define(version: 20180624065845) do
     t.index ["member_id"], name: "index_quotes_on_member_id"
   end
 
+  add_foreign_key "luck_histories", "members"
 end

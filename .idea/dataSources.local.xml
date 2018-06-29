@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="Rails braintrust-bot-rails: development" uuid="17fe0393-4d39-48d3-9e98-c046410221a6">
+      <database-info product="PostgreSQL" version="9.6.4" jdbc-version="4.0" driver-name="PostgreSQL Native Driver" driver-version="PostgreSQL 9.4.1212">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
+      <introspection-schemas>braintrust-bot-rails-dev:public</introspection-schemas>
+    </data-source>
+    <data-source name="Rails braintrust-bot-rails: test" uuid="635df43f-6bc2-4711-b67d-fd99ed620bd6">
+      <database-info product="PostgreSQL" version="9.6.4" jdbc-version="4.0" driver-name="PostgreSQL Native Driver" driver-version="PostgreSQL 9.4.1212">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
+      <introspection-schemas>braintrust-bot-rails-test:public</introspection-schemas>
+    </data-source>
+  </component>
+</project>

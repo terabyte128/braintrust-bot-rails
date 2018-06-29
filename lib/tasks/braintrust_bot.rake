@@ -12,9 +12,10 @@ namespace :braintrust_bot do
 
     Chat.where(quotes_enabled: true).each do |chat|
       if dice.sample
-        quote = chat.quotes.sample.increment! :times_accessed
+        quote = chat.quotes.sample
 
         unless quote.nil?
+          quote.increment! :times_accessed
           formatted = format_quote(quote.content, quote.author, quote.context, quote.created_at.year)
           bot.send_message chat_id: chat.telegram_chat, text: formatted, parse_mode: :html
         end
@@ -26,10 +27,25 @@ namespace :braintrust_bot do
 
   desc "Change luck for each person"
   task change_luck: :environment do
-    Member.all.each do |m|
-      if rand(6) == 0
-        m.luck = rand(101)
-        m.save
+    skip = []
+
+    Chat.all.each do |c|
+      c.members.each do |m|
+        next if skip.include? m
+
+        r = rand(6)
+        if r == 0
+          m.update_luck_random
+        elsif r == 1
+          # swap luck between members
+          other_member = c.members.where.not(id: m.id).sample
+          temp = m.luck
+          m.update_luck other_member.luck
+          other_member.update_luck temp
+
+          # if two members swapped luck, don't change the other member's luck this round
+          skip << other_member
+        end
       end
     end
   end

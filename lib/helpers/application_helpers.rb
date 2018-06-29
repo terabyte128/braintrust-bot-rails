@@ -1,7 +1,7 @@
 module ApplicationHelpers
   # Build an HTML-formatted quote to display to the user
   def format_quote(content, author, context, date)
-    quote = "\"<i>#{content}</i>\"\n<b> - #{author} #{date}</b>"
+    quote = "\"<i>#{content.humanize}</i>\"\n<b> - #{author.titleize} #{date}</b>"
     if context.present?
       quote << " (#{context})"
     end
