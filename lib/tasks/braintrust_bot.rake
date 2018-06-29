@@ -27,25 +27,9 @@ namespace :braintrust_bot do
 
   desc "Change luck for each person"
   task change_luck: :environment do
-    skip = []
-
-    Chat.all.each do |c|
-      c.members.each do |m|
-        next if skip.include? m
-
-        r = rand(12)
-        if r < 2
-          m.update_luck_random
-        elsif r == 7
-          # swap luck between members
-          other_member = c.members.where.not(id: m.id).sample
-          temp = m.luck
-          m.update_luck other_member.luck
-          other_member.update_luck temp
-
-          # if two members swapped luck, don't change the other member's luck this round
-          skip << other_member
-        end
+    Member.all.each do |m|
+      if rand(6) == 1
+        m.update_luck_random
       end
     end
   end
