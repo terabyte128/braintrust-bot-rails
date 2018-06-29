@@ -33,10 +33,10 @@ namespace :braintrust_bot do
       c.members.each do |m|
         next if skip.include? m
 
-        r = rand(6)
-        if r == 0
+        r = rand(12)
+        if r < 2
           m.update_luck_random
-        elsif r == 1
+        elsif r == 7
           # swap luck between members
           other_member = c.members.where.not(id: m.id).sample
           temp = m.luck
