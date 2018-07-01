@@ -164,12 +164,14 @@
 
     <div class="row">
       <div class="col-md">
+        <a name="luck"></a>
         <h5>Luck Statistics</h5>
         <form class="form-inline">
           <label>Select a chat member:&nbsp;&nbsp;
             <select id="member_nav" class="form-control">
+              <option value="" disabled selected>Choose a member</option>
               <% @chat.members.each do |m| %>
-                <option value="<%= chat_statistics_path(@chat.id, member: m.id) %>"><%= pretty_name(m) %></option>
+                <option value="<%= chat_statistics_path(@chat.id, member: m.id) %>#luck"<% if @member && m.id == @member.id %> selected<% end %>><%= pretty_name(m) %></option>
               <% end %>
             </select>
           </label>

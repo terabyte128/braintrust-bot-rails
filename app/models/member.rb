@@ -30,9 +30,10 @@ class Member < ApplicationRecord
     update_luck new_luck
   end
 
+  # set new luck and add it to the historical database
   def update_luck(new_luck)
-    self.luck_histories.create luck: self.luck
     self.update_attribute :luck, new_luck
+    self.luck_histories.create luck: new_luck
   end
 
   private
@@ -44,8 +45,7 @@ class Member < ApplicationRecord
       samples << rand(self.luck - 50..self.luck + 50)
     end
 
-    val = samples.reduce(:+) / samples.size
-    [[100, val].min, 0].max
+    samples.reduce(:+) / samples.size
   end
 
   # random number from 1 to 100
