@@ -41,7 +41,7 @@ class Member < ApplicationRecord
   def sample_z_estimate
     samples = []
 
-    6.times do |_|
+    12.times do |_|
       samples << rand(self.luck - 50..self.luck + 50)
     end
 
