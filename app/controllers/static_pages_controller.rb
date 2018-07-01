@@ -5,6 +5,9 @@ class StaticPagesController < ApplicationController
   def statistics
     if params[:chat_id]
       @chat = Chat.find(params[:chat_id])
+      if params[:member]
+        @member = @chat.members.find(params[:member])
+      end
     else
       @chat = nil
     end

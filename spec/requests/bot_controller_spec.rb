@@ -501,6 +501,61 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(q.content).to match(/This is a test quote/)
       expect(q.author).to match(/Test user/)
     end
+
+    it 'save quotes from replies' do
+      message = create_message(1)
+      message['reply_to_message'] = create_message(2)
+      message['reply_to_message']['text'] = "something memorable"
+
+      expect { dispatch_command 'sq', message }.to( send_telegram_message(bot, /Your quote was saved/) )
+      expect(Quote.first.content).to eq 'something memorable'
+      expect(Quote.first.author.downcase).to eq 'user2'
+    end
+
+    it 'saves reply quotes with first names' do
+      message = create_message(1)
+      message['reply_to_message'] = create_message(2)
+      message['reply_to_message']['text'] = "something memorable"
+      message['reply_to_message'][:from]['first_name'] = "Firsty"
+
+      expect { dispatch_command 'sq', message }.to( send_telegram_message(bot, /Your quote was saved/) )
+      expect(Quote.first.content).to eq 'something memorable'
+      expect(Quote.first.author).to eq 'Firsty'
+    end
+
+    it 'saves reply quotes with first and last names' do
+      message = create_message(1)
+      message['reply_to_message'] = create_message(2)
+      message['reply_to_message']['text'] = "something memorable"
+      message['reply_to_message'][:from]['first_name'] = "Firsty"
+      message['reply_to_message'][:from]['last_name'] = "Lasty"
+
+      expect { dispatch_command 'sq', message }.to( send_telegram_message(bot, /Your quote was saved/) )
+      expect(Quote.first.content).to eq 'something memorable'
+      expect(Quote.first.author).to eq 'Firsty Lasty'
+    end
+
+    it 'saves reply quotes with no username' do
+      message = create_message(1)
+      message['reply_to_message'] = create_message(2)
+      message['reply_to_message']['text'] = "something memorable"
+      message['reply_to_message'][:from].delete(:username)
+
+      expect { dispatch_command 'sq', message }.to( send_telegram_message(bot, /Your quote was saved/) )
+      expect(Quote.first.content).to eq 'something memorable'
+      expect(Quote.first.author).to eq '???'
+    end
+
+    it 'saves reply quotes using /quote' do
+      message = create_message(1)
+      message['reply_to_message'] = create_message(2)
+      message['reply_to_message']['text'] = "something memorable"
+      message['reply_to_message'][:from].delete(:username)
+
+      expect { dispatch_command 'quote', message }.to( send_telegram_message(bot, /Your quote was saved/) )
+      expect(Quote.first.content).to eq 'something memorable'
+      expect(Quote.first.author).to eq '???'
+    end
   end
 
   describe 'retrieving quotes' do

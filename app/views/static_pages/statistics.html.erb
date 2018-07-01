@@ -159,6 +159,28 @@
                              .sort { |a, b| b.second <=> a.second }, xtitle: "Member", ytitle: "Summons Performed", label: "Summons Performed"  %>
       </div>
     </div>
+
+    <hr>
+
+    <div class="row">
+      <div class="col-md">
+        <h5>Luck Statistics</h5>
+        <form class="form-inline">
+          <label>Select a chat member:&nbsp;&nbsp;
+            <select id="member_nav" class="form-control">
+              <% @chat.members.each do |m| %>
+                <option value="<%= chat_statistics_path(@chat.id, member: m.id) %>"><%= pretty_name(m) %></option>
+              <% end %>
+            </select>
+          </label>
+        </form>
+        <% if @member %>
+          <%= line_chart( @member.luck_histories.map { |l| [ l.created_at, l.luck ] } ) %>
+        <% end %>
+      </div>
+    </div>
+
+
   <% else %>
     <% provide :title, 'Chat Statistics' %>
     <div class="row">
@@ -169,3 +191,11 @@
   <% end %>
   <br>
 </div>
+
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function() {
+        $("#member_nav").change(function() {
+            document.location.href = $(this).val();
+        })
+    });
+</script>

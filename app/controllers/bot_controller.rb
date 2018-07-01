@@ -136,21 +136,41 @@ class BotController < Telegram::Bot::UpdatesController
   def sendquote!(*args)
     return if @user.nil?
 
-    # tokenize the quote into content, author, and (optional) context
-    tokens = args.join(' ').split('&&')
+    # the sender wants to save a quote sent in the chat by someone else
+    if update.dig('message', 'reply_to_message')
+      original_message = update['message']['reply_to_message']
+      new_quote = @chat.quotes.new content: original_message['text']
 
-    # we need either 2 or 3 tokens for a valid quote
-    unless tokens.length.between?(2, 3)
-      respond_with :message, text: "🧐 Usage: /sendquote [quote] && [author] && [optional context]"
-      return
+      if original_message['from']['first_name']
+        new_quote.author = original_message['from']['first_name']
+        if original_message['from']['last_name']
+          new_quote.author ||= ""
+          new_quote.author << " #{original_message['from']['last_name']}"
+        end
+      elsif original_message['from']['username']
+        new_quote.author = original_message['from']['username']
+      else
+        new_quote.author = "???"
+      end
+    else
+
+      # tokenize the quote into content, author, and (optional) context
+      tokens = args.join(' ').split('&&')
+
+      # we need either 2 or 3 tokens for a valid quote
+      unless tokens.length.between?(2, 3)
+        respond_with :message, text: "🧐 Usage: /sendquote [quote] && [author] && [optional context]"
+        return
+      end
+
+      tokens.map! { |t| t.strip } # remove leading and trailing whitespace
+      new_quote = @chat.quotes.new content: tokens[0], author: tokens[1], member: @user
+
+      if tokens.length == 3
+        new_quote.context = tokens[2]
+      end
     end
 
-    tokens.map! { |t| t.strip } # remove leading and trailing whitespace
-    new_quote = @chat.quotes.new content: tokens[0], author: tokens[1], member: @user
-
-    if tokens.length == 3
-      new_quote.context = tokens[2]
-    end
 
     if new_quote.save
       respond_with :message, text: '👌 Your quote was saved!'
@@ -184,9 +204,10 @@ class BotController < Telegram::Bot::UpdatesController
   end
 
   # shortcut method for getquote and sendquote
-  # if no arguments are passed, calls getquote; else calls sendquote
+  # if no arguments are passed and it's not a reply to a different message, calls getquote;
+  # else calls sendquote
   def quote!(*args)
-    if args.empty?
+    if args.empty? && !update.dig('message', 'reply_to_message')
       getquote! *args
     else
       sendquote! *args
