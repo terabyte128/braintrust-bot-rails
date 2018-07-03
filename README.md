@@ -1,5 +1,7 @@
 # BrainTrust Bot: On Rails
 
+[![Build Status](https://travis-ci.com/terabyte128/braintrust-bot-rails.svg?branch=master)](https://travis-ci.com/terabyte128/braintrust-bot-rails)
+
 Now available via Telegram! Add `@MemeAestheticBot` to your chat to get started!
 
 A re-write of the original [BrainTrust Bot](https://github.com/terabyte128/braintrust-bot), but with Ruby on Rails and better planning. 
