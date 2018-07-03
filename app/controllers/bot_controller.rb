@@ -287,8 +287,15 @@ class BotController < Telegram::Bot::UpdatesController
 
     statistics = @chat.members.map do |m|
       # grab the luck right before the current one
-      last_luck = m.luck_histories.where('created_at > ?', 1.day.ago).order(created_at: :desc).second
-      [m.luck, m.display_name, last_luck ? m.luck - last_luck.luck : nil]
+      latest_lucks = m.luck_histories.order(created_at: :desc)
+      current = latest_lucks.first
+      before = latest_lucks.second
+
+      if current && current.created_at > 1.day.ago && before
+        [m.luck, m.display_name, m.luck - before.luck]
+      else
+        [m.luck, m.display_name, nil]
+      end
     end
 
     statistics.sort! do |a, b|
