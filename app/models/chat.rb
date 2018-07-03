@@ -32,7 +32,9 @@ class Chat < ApplicationRecord
         Quote.new(
             content: markov.generate_n_words(rand(8..16)),
             author: author,
-            created_at: Date.new(2000 + rand(16..18), 1, 1))
+            context: "probably",
+            created_at: Date.new(2000 + rand(16..18), 1, 1)
+        )
       end
     else
       if author

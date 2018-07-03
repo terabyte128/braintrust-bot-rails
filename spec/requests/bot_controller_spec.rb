@@ -842,5 +842,70 @@ RSpec.describe BotController, telegram_bot: :rails do
           send_telegram_message(bot, Regexp.new("50(.*)user0(.*)50(.*)user1", Regexp::MULTILINE))
       )
     end
+
+     it 'shows luck history for a user' do
+       dispatch_message('', create_message(1))
+
+       m = Member.first
+
+       expect { dispatch_command 'luck', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new("50(.*)user1", Regexp::MULTILINE))
+       )
+
+       m.update_luck 75
+
+       expect { dispatch_command 'luck', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new("75(.*)user1", Regexp::MULTILINE))
+       )
+
+       m.update_luck 90
+
+       expect { dispatch_command 'luck', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new("90(.*)user1(.*)15", Regexp::MULTILINE))
+       )
+
+       m.update_luck 10
+
+       expect { dispatch_command 'luck', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new("10(.*)user1(.*)80", Regexp::MULTILINE))
+       )
+
+       m.update_luck 10
+
+       expect { dispatch_command 'luck', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new("10(.*)user1(.*)0", Regexp::MULTILINE))
+       )
+     end
+
+    it 'does not show luck history > 24 hours old' do
+      dispatch_message('', create_message(1))
+
+      m = Member.first
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new("50(.*)user1", Regexp::MULTILINE))
+      )
+
+      m.update_luck 75
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new("75(.*)user1", Regexp::MULTILINE))
+      )
+
+      m.update_luck 90
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new("90(.*)user1(.*)15", Regexp::MULTILINE))
+      )
+
+      m.luck_histories.each do |h|
+        h.update_attributes! created_at: 2.days.ago
+      end
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new("(?!15)", Regexp::MULTILINE))
+      )
+
+    end
   end
 end

@@ -194,7 +194,7 @@ class BotController < Telegram::Bot::UpdatesController
     if quote.nil?
       respond_with :message, text: "😭 You don't have any quotes#{" by <b>#{author}</b>" if author}! Use /sendquote to add some.", parse_mode: :html
     else
-      respond_with :message, text: format_quote(quote.content, quote.author, quote.context, quote.created_at.year), parse_mode: :html
+      respond_with :message, text: quote.format, parse_mode: :html
     end
   end
 
@@ -216,7 +216,7 @@ class BotController < Telegram::Bot::UpdatesController
 
   # get all members in the chat group
   def members!
-    chat_members = @chat.members.map { |m| "#{pretty_name(m, true)}" }
+    chat_members = @chat.members.map { |m| "#{m.display_name(true)}" }
     respond_with :message, text: "📜 Chat group members: #{chat_members.sort.to_sentence}", parse_mode: :html
   end
 
@@ -286,7 +286,9 @@ class BotController < Telegram::Bot::UpdatesController
     response = "🍀 <b>Luck Statistics</b>\n"
 
     statistics = @chat.members.map do |m|
-      [m.luck, pretty_name(m)]
+      # grab the luck right before the current one
+      last_luck = m.luck_histories.where('created_at > ?', 1.day.ago).order(created_at: :desc).second
+      [m.luck, m.display_name, last_luck ? m.luck - last_luck.luck : nil]
     end
 
     statistics.sort! do |a, b|
@@ -294,7 +296,22 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     a = statistics.map do |s|
-      "<b>#{s.first}:</b> #{s.second}"
+      if s.third
+        history = "("
+        if s.third < 0
+          history << "👇"
+        elsif s.third == 0
+          history << "🤷‍"
+        else
+          history << "👆"
+        end
+        history << s.third.abs.to_s
+        history << ")"
+      else
+        history = ""
+      end
+
+      "<b>#{s.first}:</b> #{s.second} #{history}"
     end
 
     response << a.join("\n")
@@ -313,7 +330,7 @@ class BotController < Telegram::Bot::UpdatesController
     @chat.save
   end
 
-  # if the message contains newuply added chat members, then add them to the chat automatically
+  # if the message contains newly added chat members, then add them to the chat automatically
   def add_members
     if update.dig('message', 'new_chat_members')
       added = []
@@ -342,7 +359,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       unless added.empty?
         pretty_users = added.map do |a|
-          result = pretty_name(a, true)
+          result = a.display_name(true)
           # notify users that they should add a username
           result << "<b>*</b>" unless a.username.present?
           result
@@ -369,7 +386,7 @@ class BotController < Telegram::Bot::UpdatesController
 
       unless member.nil?
         @chat.members.delete member
-        respond_with :message, text: "💔 #{pretty_name(member, true)} was removed from the chat group.", parse_mode: :html
+        respond_with :message, text: "💔 #{member.display_name(true)} was removed from the chat group.", parse_mode: :html
       end
     end
   end
@@ -405,7 +422,7 @@ class BotController < Telegram::Bot::UpdatesController
     # add new members automatically
     unless @user.chats.exists?(@chat.id)
       @user.chats << @chat
-      response = "❤️ #{pretty_name(@user, true)} was added to the chat group."
+      response = "❤️ #{@user.display_name(true)} was added to the chat group."
       response << " (They should add a username before they can be included in summons.)" unless @user.username.present?
 
       respond_with(:message, text: response, parse_mode: :html)

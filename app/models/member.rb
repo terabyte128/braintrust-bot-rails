@@ -12,8 +12,23 @@ class Member < ApplicationRecord
   validates_presence_of :username, unless: Proc.new { |m| m.telegram_user.present? }
   validates_presence_of :telegram_user, unless: Proc.new { |m| m.username.present? }
 
-  def display_name
-    pretty_name(self)
+  # try first last, then first, then username
+  def display_name(bold=false)
+    if self.first_name.present?
+      if self.last_name.present?
+        formatted = "#{self.first_name} #{self.last_name}"
+      else
+        formatted = self.first_name
+      end
+    else
+      formatted = self.username
+    end
+
+    if bold
+      "<b>#{formatted}</b>"
+    else
+      formatted
+    end
   end
 
   def to_s

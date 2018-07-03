@@ -3,6 +3,6 @@ class Photo < ApplicationRecord
   belongs_to :member, optional: true
 
   def display_name
-    "#{member ? pretty_name(member) : '???'} in #{chat.display_name}"
+    "#{member ? member.display_name : '???'} in #{chat.display_name}"
   end
 end

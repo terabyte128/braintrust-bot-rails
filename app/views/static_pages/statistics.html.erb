@@ -44,7 +44,7 @@
                                  data: @chat.quotes.where.not(member: nil)
                                      .group(:member).count
                                      .sort { |a, b| b.second <=> a.second }
-                                     .map { |x| [ pretty_name(x.first),
+                                     .map { |x| [ x.first.display_name,
                                                   (x.second * 100.0 / @chat.quotes.where.not(member: nil).count).round(1) ]
                                      }
                              },
@@ -53,7 +53,7 @@
                                  data: @chat.photos.where.not(member: nil)
                                      .group(:member).count
                                      .sort { |a, b| b.second <=> a.second }
-                                     .map { |x| [pretty_name(x.first),
+                                     .map { |x| [(x.first.display_name),
                                                  (x.second * 100.0 / @chat.photos.where.not(member: nil).count).round(1) ] }
                              }
 
@@ -155,7 +155,7 @@
         <h5>Summons By Member</h5>
         <p>Who summons the Brain Trust most frequently?</p>
         <%= column_chart @chat.chat_members.where.not(summons_performed: 0)
-                             .map {|m| [ pretty_name(m.member), m.summons_performed ] }
+                             .map {|m| [ (m.member.display_name), m.summons_performed ] }
                              .sort { |a, b| b.second <=> a.second }, xtitle: "Member", ytitle: "Summons Performed", label: "Summons Performed"  %>
       </div>
     </div>
@@ -171,7 +171,7 @@
             <select id="member_nav" class="form-control">
               <option value="" disabled selected>Choose a member</option>
               <% @chat.members.each do |m| %>
-                <option value="<%= chat_statistics_path(@chat.id, member: m.id) %>#luck"<% if @member && m.id == @member.id %> selected<% end %>><%= pretty_name(m) %></option>
+                <option value="<%= chat_statistics_path(@chat.id, member: m.id) %>#luck"<% if @member && m.id == @member.id %> selected<% end %>><%= m.display_name %></option>
               <% end %>
             </select>
           </label>

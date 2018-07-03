@@ -16,8 +16,7 @@ namespace :braintrust_bot do
 
         unless quote.nil?
           quote.increment! :times_accessed
-          formatted = format_quote(quote.content, quote.author, quote.context, quote.created_at.year)
-          bot.send_message chat_id: chat.telegram_chat, text: formatted, parse_mode: :html
+          bot.send_message chat_id: chat.telegram_chat, text: quote.format, parse_mode: :html
         end
       end
     end
