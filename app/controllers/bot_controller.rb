@@ -299,8 +299,12 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     statistics.sort! do |a, b|
-      b.first <=> a.first
+      # sort by amount of luck, then username
+      b.first == a.first ?
+          a.second <=> b.second : b.first <=> a.first
     end
+
+    sum = 0
 
     a = statistics.map do |s|
       if s.third
@@ -318,14 +322,15 @@ class BotController < Telegram::Bot::UpdatesController
         history = ""
       end
 
+      sum += s.first
       "<b>#{s.first}:</b> #{s.second} #{history}"
     end
 
     response << a.join("\n")
+    response << "\n<i>🎲 Average Luck: #{(sum.to_f / statistics.size).round(1)}</i>"
 
     respond_with :message, text: response, parse_mode: :html
   end
-
 
   private
 
