@@ -305,6 +305,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     sum = 0
+    luck_delta = 0
 
     a = statistics.map do |s|
       if s.third
@@ -322,12 +323,23 @@ class BotController < Telegram::Bot::UpdatesController
         history = ""
       end
 
+      luck_delta += s.third if s.third
       sum += s.first
       "<b>#{s.first}:</b> #{s.second} #{history}"
     end
 
     response << a.join("\n")
-    response << "\n<i>🎲 Average Luck: #{(sum.to_f / statistics.size).round(1)}</i>"
+    response << "\n<i>🎲 Average Luck: #{(sum.to_f / statistics.size).round(1)}"
+
+    avg_delta = (luck_delta.to_f / statistics.size).round 1
+
+    if luck_delta > 0
+      response << " (👆 #{(avg_delta.abs)})"
+    elsif luck_delta < 0
+      response << " (👇 #{(avg_delta.abs)})"
+    end
+
+    response << "</i>"
 
     respond_with :message, text: response, parse_mode: :html
   end

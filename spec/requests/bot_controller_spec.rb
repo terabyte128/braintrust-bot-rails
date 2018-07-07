@@ -921,5 +921,27 @@ RSpec.describe BotController, telegram_bot: :rails do
         send_telegram_message(bot, /Average Luck: 48.3/)
       )
     end
+
+    it 'shows average luck delta' do
+      dispatch_command '', create_message(1)
+      dispatch_command '', create_message(2)
+      dispatch_command '', create_message(3)
+
+      Member.first.update_luck 33
+      Member.second.update_luck 45
+      Member.third.update_luck 67
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, /Average Luck: 48.3/)
+      )
+
+      Member.first.update_luck 43
+      Member.second.update_luck 55
+      Member.third.update_luck 77
+
+      expect { dispatch_command 'luck', create_message(1) }.to(
+          send_telegram_message(bot, /Average Luck: 58.3(.*)10/)
+      )
+    end
   end
 end
