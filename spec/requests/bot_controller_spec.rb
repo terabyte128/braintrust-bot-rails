@@ -932,7 +932,7 @@ RSpec.describe BotController, telegram_bot: :rails do
       Member.third.update_luck 67
 
       expect { dispatch_command 'luck', create_message(1) }.to(
-          send_telegram_message(bot, /Average: 48.3<\/b>/)
+          send_telegram_message(bot, /Average: 48.3/)
       )
 
       Member.first.update_luck 43
