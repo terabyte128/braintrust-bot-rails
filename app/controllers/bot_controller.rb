@@ -329,7 +329,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     response << a.join("\n")
-    response << "\n<i>🎲 Average Luck: #{(sum.to_f / statistics.size).round(1)}"
+    response << "\n<b>🎲 Average: #{(sum.to_f / statistics.size).round(1)}"
 
     avg_delta = (luck_delta.to_f / statistics.size).round 1
 
@@ -339,7 +339,7 @@ class BotController < Telegram::Bot::UpdatesController
       response << " (👇 #{(avg_delta.abs)})"
     end
 
-    response << "</i>"
+    response << "</b>"
 
     respond_with :message, text: response, parse_mode: :html
   end
