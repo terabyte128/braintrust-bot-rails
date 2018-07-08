@@ -8,7 +8,7 @@ class Quote < ApplicationRecord
   end
 
   def format
-    quote = "\"<i>#{self.content.capitalize}</i>\"\n<b> - #{self.author.titleize} #{self.created_at.year}</b>"
+    quote = "\"<i>#{self.content.upcase_first}</i>\"\n<b> - #{self.author.titleize} #{self.created_at.year}</b>"
     if self.context.present?
       quote << " (#{self.context})"
     end
