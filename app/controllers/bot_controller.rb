@@ -334,9 +334,9 @@ class BotController < Telegram::Bot::UpdatesController
     avg_delta = (luck_delta.to_f / statistics.size).round 1
 
     if luck_delta > 0
-      response << " (👆 #{(avg_delta.abs)})"
+      response << " (👆#{(avg_delta.abs)})"
     elsif luck_delta < 0
-      response << " (👇 #{(avg_delta.abs)})"
+      response << " (👇#{(avg_delta.abs)})"
     end
 
     respond_with :message, text: response, parse_mode: :html
