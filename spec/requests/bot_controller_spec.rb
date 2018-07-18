@@ -402,6 +402,24 @@ RSpec.describe BotController, telegram_bot: :rails do
         count += 1
       end
     end
+
+    it 'breaks up summon messages when there are more than 5 members' do
+      # should send 3 different messages
+      (1..12).to_a.reverse.each do |i|
+        dispatch_message 'Hello', create_message(i)
+      end
+
+      expect(Member.all.size).to eq(12)
+      expect(Chat.all.size).to eq(1)
+
+      groups = (2..12).map {|i| "@user#{i}"}.sort.in_groups_of(BotController::SUMMON_GROUP_SIZE, false)
+
+      groups.each do |group|
+        expect { dispatch_command 's', create_message(1)}.to(
+            send_telegram_message(bot, group.join(", "))
+        )
+      end
+    end
   end
 
   describe 'saving quotes' do

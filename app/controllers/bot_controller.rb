@@ -7,6 +7,7 @@ class BotController < Telegram::Bot::UpdatesController
 
   PREFIXES = %w(@channel @everyone @all @people)
   PREFIXES << "@#{Telegram.bot.username.downcase}" if Telegram.bot.username.present?
+  SUMMON_GROUP_SIZE = 5
 
   before_action :find_or_create_chat, :find_or_create_user, :add_members, :remove_member
 
@@ -229,6 +230,7 @@ class BotController < Telegram::Bot::UpdatesController
     chat_members = @chat.members
                        .select { |m| m.username.present? && m.username != from['username'].downcase }
                        .map { |m| "@#{m.username}" }
+                       .sort
 
     announcement = "📣 <b>#{ if from.key? 'first_name' then from['first_name'] else from['username'] end }</b>\n"
 
@@ -238,9 +240,11 @@ class BotController < Telegram::Bot::UpdatesController
       announcement << message.join(' ').strip << "\n\n"
     end
 
-    announcement << chat_members.sort.join(', ')
-
     respond_with :message, text: announcement, parse_mode: :html
+
+    chat_members.in_groups_of(SUMMON_GROUP_SIZE, false).each do |group|
+      respond_with :message, text: group.join(", ")
+    end
   end
 
   # shorthand for summon

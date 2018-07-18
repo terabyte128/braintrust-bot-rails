@@ -31,3 +31,4 @@ telegram_images/*
 !telegram_images/.keep
 
 .DS_Store
+spec/examples.txt
