@@ -165,7 +165,7 @@
     <div class="row">
       <div class="col-md">
         <a name="luck"></a>
-        <h5>Luck Statistics</h5>
+        <h5>Single Luck Statistics</h5>
         <form class="form-inline">
           <label>Select a chat member:&nbsp;&nbsp;
             <select id="member_nav" class="form-control">
@@ -177,8 +177,15 @@
           </label>
         </form>
         <% if @member %>
-          <%= line_chart( @member.luck_histories.map { |l| [ l.created_at, l.luck ] } ) %>
+          <%= line_chart( @member.luck_histories.map { |l| [ l.created_at, l.luck ] }, curve: false, xtitle: "Date", ytitle: "Luck" ) %>
         <% end %>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md">
+        <h5>Combined Luck Statistics</h5>
+        <%= line_chart(@combined_luck, curve: false, xtitle: "Date", ytitle: "Luck") %>
       </div>
     </div>
 
