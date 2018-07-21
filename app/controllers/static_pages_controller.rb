@@ -9,12 +9,12 @@ class StaticPagesController < ApplicationController
         @member = @chat.members.find(params[:member])
       end
 
-      @combined_luck = @chat.members.map do |m|
-        {
-            name: m.display_name,
-            data: m.luck_histories.map { |l| [ l.created_at, l.luck ] }
-        }
-      end
+      # @combined_luck = @chat.members.map do |m|
+      #   {
+      #       name: m.display_name,
+      #       data: m.luck_histories.map { |l| [ l.created_at, l.luck ] }
+      #   }
+      # end
     else
       @chat = nil
     end

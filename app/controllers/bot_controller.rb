@@ -240,11 +240,11 @@ class BotController < Telegram::Bot::UpdatesController
       announcement << message.join(' ').strip << "\n\n"
     end
 
-    respond_with :message, text: announcement, parse_mode: :html
-
     chat_members.in_groups_of(SUMMON_GROUP_SIZE, false).each do |group|
       respond_with :message, text: group.join(", ")
     end
+
+    respond_with :message, text: announcement, parse_mode: :html
   end
 
   # shorthand for summon
