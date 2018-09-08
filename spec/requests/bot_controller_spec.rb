@@ -973,8 +973,12 @@ RSpec.describe BotController, telegram_bot: :rails do
 
 
       expect { dispatch_command 'luckstats user1', create_message(1) }.to(
-          send_telegram_message(bot,Regexp.new(m.chats.first.id.to_s))
+          send_telegram_message(bot ,Regexp.new(m.chats.first.id.to_s))
        )
+
+      expect { dispatch_command 'luckstats user1', create_message(1) }.to(
+          send_telegram_message(bot, /#luck/)
+      )
     end
 
     it 'responds to nonexistent users' do
