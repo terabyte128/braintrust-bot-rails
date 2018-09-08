@@ -45,4 +45,6 @@ Rails.application.configure do
 
   Telegram.reset_bots
   Telegram::Bot::ClientStub.stub_all!
+
+  Rails.application.routes.default_url_options[:host] = 'localhost:3000'
 end

@@ -63,6 +63,23 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  def luckstats!(*args)
+    return if @user.nil?
+
+    if args.size != 1
+      respond_with :message, text: "😈 Usage: /luckstats [username]"
+      return
+    end
+
+    if (target = @chat.members.find_by_username(strip_leading_at(args[0])))
+      path = Rails.application.routes.url_helpers.chat_statistics_url(chat_id: @chat.id, member: target.id)
+      response = "🔗 <a href=\"#{path}\">Luck Statistics for #{target.display_name(false)}</a>"
+      respond_with :message, text: response, parse_mode: :html
+    else
+      respond_with :message, text: "🤷‍♂️ That user doesn't exist in this chat!"
+    end
+  end
+
   # send a photo to the chat
   # uses the :photo key in the session store -- if it's not there, then they didn't send a photo
   # *args is an optional caption
@@ -456,6 +473,15 @@ class BotController < Telegram::Bot::UpdatesController
 
     unless @user.save
       respond_with :message, text: "⚠️ Failed to update #{from['username']}. (#{@user.errors.full_messages})"
+    end
+  end
+
+  private
+  def strip_leading_at(username)
+    if username.start_with? '@'
+      username[1..-1]
+    else
+      username
     end
   end
 end
