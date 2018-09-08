@@ -94,6 +94,4 @@ Rails.application.configure do
   # Enable Bot's session unconditionally.
   config.telegram_updates_controller.session_store = :file_store,
       Rails.root.join('tmp', 'session_store')
-
-  Rails.application.routes.default_url_options[:host] = ENV['HOST']
 end
