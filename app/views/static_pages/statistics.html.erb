@@ -5,21 +5,6 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-            Select a Chat
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <% Chat.all.each do |chat| %>
-              <%= link_to chat.display_name, chat_statistics_path(chat.id), class: 'dropdown-item' %>
-            <% end %>
-          </div>
-        </li>
-      </ul>
-    </div>
-
     <span class="navbar-text">
       <%= @chat.display_name if @chat %>
     </span>
@@ -182,23 +167,14 @@
       </div>
     </div>
 
-<!--    <div class="row">-->
-<!--      <div class="col-md">-->
-<!--        <h5>Combined Luck Statistics</h5>-->
-        <%#= line_chart(@combined_luck, curve: false, xtitle: "Date", ytitle: "Luck") %>
-<!--      </div>-->
-<!--    </div>-->
-
-
-  <% else %>
-    <% provide :title, 'Chat Statistics' %>
     <div class="row">
       <div class="col-md">
-        <h5>Select a chat from the dropdown menu to get started.</h5>
+        <h5>Average Chat Luck</h5>
+        <%= line_chart(@chat.luck_histories.group_by_day('luck_histories.created_at').average(:luck), curve: false, xtitle: "Date", ytitle: "Luck") %>
       </div>
     </div>
-  <% end %>
   <br>
+  <% end %>
 </div>
 
 <script type="text/javascript" charset="utf-8">

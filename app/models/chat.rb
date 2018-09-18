@@ -4,6 +4,7 @@ class Chat < ApplicationRecord
   has_many :quotes
   has_many :chat_members
   has_many :members, through: :chat_members
+  has_many :luck_histories, through: :members
   has_many :eight_ball_answers
   has_many :photos
   has_many :alexas
