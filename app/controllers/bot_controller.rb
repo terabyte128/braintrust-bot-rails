@@ -84,7 +84,7 @@ class BotController < Telegram::Bot::UpdatesController
     return if @chat.nil?
 
     path = Rails.application.routes.url_helpers.chat_statistics_url(chat_id: @chat.id)
-    response = "🔗 <a href=\"#{path}#luck\">Chat Statistics for #{@chat.display_name}</a>"
+    response = "🔗 <a href=\"#{path}\">Chat Statistics for #{@chat.display_name}</a>"
     respond_with :message, text: response, parse_mode: :html
   end
 

@@ -166,14 +166,6 @@
         <% end %>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col-md">
-        <h5>Average Chat Luck</h5>
-        <%= line_chart(@chat.luck_histories.group_by_day('luck_histories.created_at').average(:luck), curve: false, xtitle: "Date", ytitle: "Luck") %>
-      </div>
-    </div>
-  <br>
   <% end %>
 </div>
 
