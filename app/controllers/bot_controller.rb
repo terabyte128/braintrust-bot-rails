@@ -80,6 +80,14 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  def chatstats!(*args)
+    return if @chat.nil?
+
+    path = Rails.application.routes.url_helpers.chat_statistics_url(chat_id: @chat.id)
+    response = "🔗 <a href=\"#{path}#luck\">Chat Statistics for #{@chat.display_name}</a>"
+    respond_with :message, text: response, parse_mode: :html
+  end
+
   # send a photo to the chat
   # uses the :photo key in the session store -- if it's not there, then they didn't send a photo
   # *args is an optional caption

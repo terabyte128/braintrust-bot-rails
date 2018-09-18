@@ -971,9 +971,8 @@ RSpec.describe BotController, telegram_bot: :rails do
           send_telegram_message(bot, Regexp.new(m.id.to_s))
       )
 
-
       expect { dispatch_command 'luckstats user1', create_message(1) }.to(
-          send_telegram_message(bot ,Regexp.new(m.chats.first.id.to_s))
+          send_telegram_message(bot, Regexp.new(m.chats.first.id.to_s))
        )
 
       expect { dispatch_command 'luckstats user1', create_message(1) }.to(
@@ -992,6 +991,24 @@ RSpec.describe BotController, telegram_bot: :rails do
     it 'responds to badly formatted commands' do
       expect { dispatch_command 'luckstats', create_message(1) }.to(
           send_telegram_message(bot, /Usage/)
+      )
+    end
+  end
+
+  describe 'generating chat statistics link' do
+    it 'generates chat statistics link for existing chat' do
+      dispatch_message '', create_message(1)
+
+      m = Member.first
+
+      expect { dispatch_command 'chatstats', create_message(1) }.to(
+          send_telegram_message(bot, Regexp.new(m.chats.first.id.to_s))
+      )
+    end
+
+    it 'generates chat statistics link for new chat' do
+      expect { dispatch_command 'chatstats', create_message(1) }.to(
+          send_telegram_message(bot, /Chat Statistics/)
       )
     end
   end
