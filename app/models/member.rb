@@ -36,7 +36,10 @@ class Member < ApplicationRecord
   end
 
   def update_luck_random
-    if rand < 0.4
+    date = DateTime.now
+    if !birthday.nil? && birthday.day == date.day && birthday.month == date.month
+      new_luck = sample_z_estimate(rand(25..40))
+    elsif rand < 0.4
       new_luck = sample_random
     else
       new_luck = sample_z_estimate
@@ -53,11 +56,11 @@ class Member < ApplicationRecord
 
   private
   # quick 'n dirty way to sample from a normal-ish distribution with "reasonable" accuracy
-  def sample_z_estimate
+  def sample_z_estimate(luck_increase=0)
     samples = []
 
     12.times do |_|
-      samples << rand(self.luck - 50..self.luck + 50)
+      samples << rand(self.luck - 50 + luck_increase..self.luck + 50 + luck_increase)
     end
 
     samples.reduce(:+) / samples.size
