@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180629055057) do
+ActiveRecord::Schema.define(version: 20181023195537) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(version: 20180629055057) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "title"
+    t.boolean "birthdays_enabled", default: false, null: false
   end
 
   create_table "eight_ball_answers", force: :cascade do |t|
@@ -97,6 +98,7 @@ ActiveRecord::Schema.define(version: 20180629055057) do
     t.bigint "telegram_user"
     t.string "first_name"
     t.string "last_name"
+    t.date "birthday"
   end
 
   create_table "photos", force: :cascade do |t|

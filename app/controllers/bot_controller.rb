@@ -371,6 +371,29 @@ class BotController < Telegram::Bot::UpdatesController
     respond_with :message, text: response, parse_mode: :html
   end
 
+  def birthday!(*args)
+    return if @user.nil?
+
+    if args.size == 0
+      if @user.birthday.nil?
+        respond_with :message, text: "🧐 You haven't set a birthday yet. Try: /birthday [your birthday]"
+      else
+        respond_with :message, text: "🎂 Your birthday is <b>#{@user.birthday.strftime("%-d %b %Y")}</b>.",
+                     parse_mode: :html
+      end
+    else
+      strargs = args.join(" ")
+      begin
+        date = strargs.to_date
+        @user.update_attribute :birthday, date
+        respond_with :message, text: "🎂 Your birthday was set to <b>#{date.strftime("%-d %b %Y")}</b>.",
+                     parse_mode: :html
+      rescue ArgumentError
+        respond_with :message, text: "🤷‍♀️ I couldn't parse <b>#{strargs}</b> as a date.", parse_mode: :html
+      end
+    end
+  end
+
   private
 
   def find_or_create_chat

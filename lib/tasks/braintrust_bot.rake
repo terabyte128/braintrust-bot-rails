@@ -33,6 +33,41 @@ namespace :braintrust_bot do
     end
   end
 
+  task notify_birthdays: :environment do
+    today_date = DateTime.now.to_date
+    week_from_now_date = 7.days.from_now.to_date
+
+    bot = Telegram::Bot::Client.new(ENV['BOT_TOKEN'], ENV['BOT_NAME'])
+
+    Chat.where(birthdays_enabled: true).each do |chat|
+      today = []; week_from_now = []
+
+      chat.members.each do |member|
+        unless (birthday = member.birthday) == nil
+          if birthday.day == week_from_now_date.day && birthday.month == week_from_now_date.month
+            week_from_now << "<b>#{member.display_name}</b>"
+          elsif birthday.day == today_date.day && birthday.month == today_date.month
+            today << "<b>#{member.display_name}</b>"
+          end
+        end
+      end
+
+      greeting = ""
+
+      unless today.empty?
+        greeting << "#{today.to_sentence} #{today.size == 1 ? "has" : "have"} #{today.size == 1 ? "a birthday" : "birthdays"} today!"
+      end
+
+      unless week_from_now.empty?
+        greeting << " #{week_from_now.to_sentence} #{week_from_now.size == 1 ? "has" : "have"} #{week_from_now.size == 1 ? "a birthday" : "birthdays"} next week!"
+      end
+
+      unless greeting.blank?
+        bot.send_message chat_id: chat.telegram_chat, text: "🎂 #{greeting}", parse_mode: :html
+      end
+    end
+  end
+
   desc "Import database entries from BrainTrust Bot 1.0"
   task import_old_database: :environment do
     DATABASE_NAME = ENV['OLD_DB']

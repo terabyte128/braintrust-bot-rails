@@ -1012,4 +1012,26 @@ RSpec.describe BotController, telegram_bot: :rails do
       )
     end
   end
+
+  describe 'birthdays' do
+    it 'creates a birthday' do
+      expect { dispatch_command 'birthday 01-10-1996', create_message(1) }.to(
+          send_telegram_message(bot, /1 Oct 1996/)
+      )
+    end
+
+    it 'recalls birthday' do
+      dispatch_command 'birthday 01-10-1996', create_message(1)
+
+      expect { dispatch_command 'birthday', create_message(1) }.to(
+          send_telegram_message(bot, /1 Oct 1996/)
+      )
+    end
+
+    it 'handles null birthdays' do
+      expect { dispatch_command 'birthday', create_message(1) }.to(
+          send_telegram_message(bot, /You haven't set a birthday yet/)
+      )
+    end
+  end
 end
