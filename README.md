@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/terabyte128/braintrust-bot-rails.svg?branch=master)](https://travis-ci.com/terabyte128/braintrust-bot-rails)
 
-Now available via Telegram! Add `@MemeAestheticBot` to your chat to get started!
+Now available via Telegram! Add `@BrainTrustBot` to your chat to get started!
 
 A re-write of the original [BrainTrust Bot](https://github.com/terabyte128/braintrust-bot), but with Ruby on Rails and better planning. 
 The original bot has served its purpose well for multiple years, but it's time to start on something built from the ground-up. 
@@ -37,6 +37,10 @@ better understanding of which features were actually useful and how to implement
 
 - [X] Send a command to roll an 8-ball and get back a divine answer from the bot
 - [X] Luck statistics for each member of a chat group
+
+**Birthdays**
+
+- [X] Send the bot your birthday via the `/birthday` command and have it notify everyone a week in advance
 
 **Administration**
 
