@@ -377,13 +377,15 @@ class BotController < Telegram::Bot::UpdatesController
 
   def birthday!(*args)
     return if @user.nil?
+    reply_to_message = update['message']['message_id']
 
     if args.size == 0
       if @user.birthday.nil?
-        respond_with :message, text: "🧐 You haven't set a birthday yet. Try: /birthday [your birthday]"
+        respond_with :message, text: "🧐 You haven't set a birthday yet. Try: /birthday [your birthday]",
+                     reply_to_message_id: reply_to_message
       else
         respond_with :message, text: "🎂 Your birthday is <b>#{@user.birthday.strftime("%-d %b %Y")}</b>.",
-                     parse_mode: :html
+                     parse_mode: :html, reply_to_message_id: reply_to_message
       end
     else
       strargs = args.join(" ")
@@ -391,9 +393,10 @@ class BotController < Telegram::Bot::UpdatesController
         date = strargs.to_date
         @user.update_attribute :birthday, date
         respond_with :message, text: "🎂 Your birthday was set to <b>#{date.strftime("%-d %b %Y")}</b>.",
-                     parse_mode: :html
+                     parse_mode: :html, reply_to_message_id: reply_to_message
       rescue ArgumentError
-        respond_with :message, text: "🤷‍♀️ I couldn't parse <b>#{strargs}</b> as a date.", parse_mode: :html
+        respond_with :message, text: "🤷‍♀️ I couldn't parse <b>#{strargs}</b> as a date.", parse_mode: :html,
+                     reply_to_message_id: reply_to_message
       end
     end
   end
