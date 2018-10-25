@@ -12,6 +12,6 @@ ActiveAdmin.register EightBallAnswer do
 #   permitted
 # end
 
-  permit_params :chat_id, :answer
+  permit_params :chat_id, :answer, :telegram_sticker
 
 end

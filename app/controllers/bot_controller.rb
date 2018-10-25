@@ -301,11 +301,15 @@ class BotController < Telegram::Bot::UpdatesController
 
   def on_8ball!(*)
     answer = @chat.eight_ball_answers.sample
+    reply_to_message = update['message']['message_id']
 
     if answer.nil?
-      respond_with :message, text: "🤐 <i>You've got no answers, guess you're SOL.</i>", parse_mode: :html
+      respond_with :message, text: "🤐 <i>You've got no answers, guess you're SOL.</i>", parse_mode: :html,
+                   reply_to_message_id: reply_to_message
+    elsif answer.telegram_sticker
+      respond_with :sticker, sticker: answer.telegram_sticker, reply_to_message_id: reply_to_message
     else
-      respond_with :message, text: "<i>#{answer.answer}</i>", parse_mode: :html
+      respond_with :message, text: "<i>#{answer.answer}</i>", parse_mode: :html, reply_to_message_id: reply_to_message
     end
   end
 

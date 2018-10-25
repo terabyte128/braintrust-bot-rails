@@ -848,6 +848,14 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       expect { dispatch_command '8ball', create_message(1) }.to send_telegram_message(bot, /(great)|(amazing)/)
     end
+
+    it 'sends a sticker if one exists' do
+      c = Chat.create! telegram_chat: '2468'
+      c.eight_ball_answers.create! answer: "sticker", telegram_sticker: "stickerid"
+
+      expect { dispatch_command '8ball', create_message(1) }.to make_telegram_request(bot, :sendSticker)
+                                                                    .with(hash_including(sticker: "stickerid", chat_id: 2468))
+    end
   end
 
   describe 'predicting user luck' do
