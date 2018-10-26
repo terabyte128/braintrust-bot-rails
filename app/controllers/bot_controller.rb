@@ -401,14 +401,35 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  def planepic!
+    queries = %w(airplane plane 737 747 a380 boeing airbus bombardier)
+    webpic!(queries.sample)
+  end
+
+  def webpic!(*args)
+    cached_response = respond_with :message, text: "🕵🏻‍♀️ Looking up a picture for you...", parse_mode: :markdown
+    photo = Unsplash::Photo.random(query: args.join(" "))
+
+    # This attribution format is required by the Unsplash API.
+    # The first letter is a direct link to the photo so that telegram will load a preview.
+    # The rest is a link to the photo's "page" with other info about it.
+    caption = "[P](#{photo[:urls][:regular]})[hoto](#{photo[:links][:html]})"
+    caption << " by [#{photo[:user][:name]}](#{photo[:user][:links][:html]})"
+    caption << " on [Unsplash](https://unsplash.com)"
+
+    bot.public_send('edit_message_text', text: caption,
+                    chat_id: cached_response['result']['chat']['id'],
+                    message_id: cached_response['result']['message_id'], parse_mode: :markdown)
+
+  end
+
   private
 
   def find_or_create_chat
     @chat = Chat.where(telegram_chat: chat['id']).first_or_create
 
     # update title if necessary
-    @chat.title = chat['title']
-    @chat.save
+    @chat.update_attribute :title, chat[:title]
   end
 
   # if the message contains newly added chat members, then add them to the chat automatically
