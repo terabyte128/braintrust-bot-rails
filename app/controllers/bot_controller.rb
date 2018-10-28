@@ -22,8 +22,7 @@ class BotController < Telegram::Bot::UpdatesController
     latest_quote = @user.quotes.order(created_at: :desc).where(location_confirmed: false, chat: @chat).first
 
     unless latest_quote.nil?
-      latest_quote.location_confirmed = true
-      latest_quote.save
+      latest_quote.update_attribute :location_confirmed, true
     end
 
     if update.key?('photo')
@@ -201,7 +200,7 @@ class BotController < Telegram::Bot::UpdatesController
     if new_quote.save
       respond_with :message, text: '👌 Your quote was saved!'
     else
-      respond_with :message, text: "🤬 Failed to save quote: #{new_quote.errors.full_messages} (@SamWolfson should fix this)"
+      respond_with :message, text: "🤬 Failed to save quote: [#{new_quote.errors.full_messages.join(", ")}] (@SamWolfson should fix this)"
     end
   end
 
@@ -253,8 +252,8 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     chat_members = @chat.members
-                       .select { |m| m.username.present? && m.username != from['username'].downcase }
-                       .map { |m| "@#{m.username}" }
+                       .select { |m| m.telegram_user != from['id'] }
+                       .map { |m| m.username.nil? ? m.html_link : "@#{m.username}" }
                        .sort
 
     announcement = "📣 <b>#{ if from.key? 'first_name' then from['first_name'] else from['username'] end }</b>\n"
@@ -420,10 +419,11 @@ class BotController < Telegram::Bot::UpdatesController
     bot.public_send('edit_message_text', text: caption,
                     chat_id: cached_response['result']['chat']['id'],
                     message_id: cached_response['result']['message_id'], parse_mode: :markdown)
-
   end
 
+
   private
+
 
   def find_or_create_chat
     @chat = Chat.where(telegram_chat: chat['id']).first_or_create
@@ -436,12 +436,9 @@ class BotController < Telegram::Bot::UpdatesController
   def add_members
     if update.dig('message', 'new_chat_members')
       added = []
-      no_username = false
 
       update['message']['new_chat_members'].each do |m|
         next if m['is_bot']
-
-        no_username = !m['username'].present?
 
         new_member = Member.find_by_telegram_user m['id']
         new_member ||= Member.find_by_username m['username'].downcase if m['username'].present?
@@ -460,16 +457,8 @@ class BotController < Telegram::Bot::UpdatesController
       end
 
       unless added.empty?
-        pretty_users = added.map do |a|
-          result = a.display_name(true)
-          # notify users that they should add a username
-          result << "<b>*</b>" unless a.username.present?
-          result
-        end
-
+        pretty_users = added.map { |u| u.display_name(true) }
         message = "#{added.size == 1 ? 'was' : 'were'} added to the chat group."
-
-        message << "\n\n<b>*</b> should add a username before they can be included in summons." if no_username
 
         respond_with :message, text: "❤️ #{pretty_users.to_sentence} #{message}", parse_mode: :html
       end
@@ -525,7 +514,6 @@ class BotController < Telegram::Bot::UpdatesController
     unless @user.chats.exists?(@chat.id)
       @user.chats << @chat
       response = "❤️ #{@user.display_name(true)} was added to the chat group."
-      response << " (They should add a username before they can be included in summons.)" unless @user.username.present?
 
       respond_with(:message, text: response, parse_mode: :html)
     end
@@ -535,7 +523,6 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
-  private
   def strip_leading_at(username)
     if username.start_with? '@'
       username[1..-1]

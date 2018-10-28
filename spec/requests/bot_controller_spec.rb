@@ -5,7 +5,7 @@ RSpec.describe BotController, telegram_bot: :rails do
   def create_message(uid)
     {
         from: {
-            id: "99#{uid}",
+            id: "99#{uid}".to_i,
             username: "uSer#{uid}"
         },
         chat: {
@@ -202,45 +202,6 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect(m.username).to eq('user1')
     end
 
-    it 'adds users without usernames' do
-      message = {
-          from: {
-              id: 1234,
-              first_name: 'foo',
-              last_name: 'bar'
-          },
-          chat: {
-              id: 2468,
-              title: 'TestChat'
-          }
-      }
-
-      expect { dispatch_message '', message }.to send_telegram_message(bot, /foo bar(.*)add a username/)
-    end
-
-    it 'adds new users without usernames when a different user adds them to the chat' do
-      new_chat_members = create_message(1)
-      new_chat_members[:new_chat_members] = Array.new
-
-      (2..6).each do |i|
-        new_chat_members[:new_chat_members] << {
-            id: 12340 + i,
-            first_name: "first#{i}"
-        }
-      end
-
-      expected_users = (2..6).map do |i|
-        "<b>first#{i}</b><b>\\*</b>"
-      end
-
-      expect { dispatch_message '', new_chat_members }.to(
-          send_telegram_message(bot, Regexp.new("#{expected_users.to_sentence}(.*)should", Regexp::MULTILINE))
-      )
-
-      expect(Chat.all.size).to eq 1
-      expect(Chat.first.members.all.size).to eq 6
-    end
-
     it 'removes users' do
       dispatch_message '', create_message(1)
       dispatch_message '', create_message(2)
@@ -362,7 +323,15 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect { dispatch_command 's I am a command', create_message(1) }.to send_telegram_message(bot, /I am a command/)
     end
 
-    it 'ignores users without usernames and sender when summoning' do
+    it 'ignores sender when summoning' do
+      3.times do |i|
+        dispatch_message "hello world", create_message(i)
+      end
+
+      expect { dispatch_command 's', create_message(1) }.to send_telegram_message(bot, /@user0, @user2/)
+    end
+
+    it 'uses tg:// links for users without usernames' do
       message = {
           from: {
               id: 1234,
@@ -381,7 +350,7 @@ RSpec.describe BotController, telegram_bot: :rails do
         dispatch_message "hello world", create_message(i)
       end
 
-      expect { dispatch_command 's', create_message(1) }.to send_telegram_message(bot, /^[(foo)|(@user1)]/)
+      expect { dispatch_command 's', create_message(1) }.to send_telegram_message(bot, /tg:\/\/user\?id=#{1234}/)
     end
 
     it 'increments summon count when a user summons' do

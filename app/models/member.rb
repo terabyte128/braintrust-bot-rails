@@ -35,6 +35,14 @@ class Member < ApplicationRecord
     display_name
   end
 
+  def html_link
+    "<a href='tg://user?id=#{telegram_user}'>#{display_name}</a>"
+  end
+
+  def md_link
+    "[#{display_name}](tg://user?id=#{telegram_user})"
+  end
+
   def update_luck_random
     date = DateTime.now
     if !birthday.nil? && birthday.day == date.day && birthday.month == date.month

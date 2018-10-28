@@ -1,5 +1,5 @@
 Unsplash.configure do |config|
   config.application_access_key = ENV['UNSPLASH_ACCESS_KEY']
   config.application_secret = ENV['UNSPLASH_SECRET']
-  config.utm_source = "Airplane Photos"
+  config.utm_source = "Random Photo Bot"
 end
