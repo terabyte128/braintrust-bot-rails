@@ -407,6 +407,7 @@ class BotController < Telegram::Bot::UpdatesController
 
   def webpic!(*args)
     cached_response = respond_with :message, text: "🕵🏻‍♀️ Looking up a picture for you...", parse_mode: :markdown
+    begin
     photo = Unsplash::Photo.random(query: args.join(" "))
 
     # This attribution format is required by the Unsplash API.
@@ -419,6 +420,11 @@ class BotController < Telegram::Bot::UpdatesController
     bot.public_send('edit_message_text', text: caption,
                     chat_id: cached_response['result']['chat']['id'],
                     message_id: cached_response['result']['message_id'], parse_mode: :markdown)
+    rescue Unsplash::Error
+      bot.public_send('edit_message_text', text: "🤷‍♀️ I couldn't find anything that matched <b>#{args.join(" ")}</b>.‍",
+                      chat_id: cached_response['result']['chat']['id'],
+                      message_id: cached_response['result']['message_id'], parse_mode: :html)
+    end
   end
 
 
