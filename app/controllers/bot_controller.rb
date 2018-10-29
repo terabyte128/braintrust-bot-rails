@@ -400,7 +400,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
-  def planepic!
+  def planepic!(*)
     queries = %w(airplane plane 737 747 a380 boeing airbus bombardier)
     webpic!(queries.sample)
   end
