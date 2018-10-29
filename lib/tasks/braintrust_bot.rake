@@ -39,6 +39,14 @@ namespace :braintrust_bot do
 
     bot = Telegram::Bot::Client.new(ENV['BOT_TOKEN'], ENV['BOT_NAME'])
 
+    def possessiveize(word)
+      "#{word}'s"
+    end
+
+    def sentenceize(names, at)
+      "#{names.map{ |n| possessiveize(n) }.to_sentence } #{"birthday".pluralize names.size} #{names.size == 1 ? "is" : "are"} #{at}!"
+    end
+
     Chat.where(birthdays_enabled: true).each do |chat|
       today = []; week_from_now = []
 
@@ -55,11 +63,11 @@ namespace :braintrust_bot do
       greeting = ""
 
       unless today.empty?
-        greeting << "#{today.to_sentence} #{today.size == 1 ? "has" : "have"} #{today.size == 1 ? "a birthday" : "birthdays"} today!"
+        greeting << sentenceize(today, "today") + " "
       end
 
       unless week_from_now.empty?
-        greeting << " #{week_from_now.to_sentence} #{week_from_now.size == 1 ? "has" : "have"} #{week_from_now.size == 1 ? "a birthday" : "birthdays"} next week!"
+        greeting << sentenceize(week_from_now, "next week")
       end
 
       unless greeting.blank?
