@@ -56,7 +56,7 @@
 
         <%= column_chart quotes_by_author.uniq.map { |x| [x, quotes_by_author.count(x)] }
                              .sort {|a, b| b.second <=> a.second}
-                             .select {|x| x.second > 1}, xtitle: 'Author', ytitle: 'Authored Quotes', label: 'Authored Quotes' %>
+                             .select {|x| x.second > 2}, xtitle: 'Author', ytitle: 'Authored Quotes', label: 'Authored Quotes' %>
       </div>
     </div>
     <div class="row">
