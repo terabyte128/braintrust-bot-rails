@@ -18,6 +18,8 @@ class StaticPagesController < ApplicationController
       @luck_distribution = slices.map do |k, v|
         ["#{k.to_s} - #{(k + 9).to_s}", v]
       end
+
+      @luck_distribution.sort! {|a, b| a.second <=> b.second }
     else
       @chat = nil
     end
