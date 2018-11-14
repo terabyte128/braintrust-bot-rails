@@ -9,12 +9,15 @@ class StaticPagesController < ApplicationController
         @member = @chat.members.find(params[:member])
       end
 
-      # @combined_luck = @chat.members.map do |m|
-      #   {
-      #       name: m.display_name,
-      #       data: m.luck_histories.map { |l| [ l.created_at, l.luck ] }
-      #   }
-      # end
+      slices = Hash.new(0)
+
+      @chat.members.each do |m|
+        slices[m.luck.floor(-1)] += 1
+      end
+
+      @luck_distribution = slices.map do |k, v|
+        ["#{k.to_s} - #{(k + 9).to_s}", v]
+      end
     else
       @chat = nil
     end

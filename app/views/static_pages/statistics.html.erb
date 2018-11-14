@@ -149,6 +149,16 @@
 
     <div class="row">
       <div class="col-md">
+        <h5>Luck Distribution Histogram</h5>
+        <%= column_chart @luck_distribution, xtitle: "Luck", ytitle: "Members" %>
+      </div>
+    </div>
+
+    <hr>
+
+
+    <div class="row">
+      <div class="col-md">
         <a name="luck"></a>
         <h5>Single Luck Statistics</h5>
         <form class="form-inline">
