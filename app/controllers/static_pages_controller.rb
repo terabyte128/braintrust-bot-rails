@@ -10,16 +10,26 @@ class StaticPagesController < ApplicationController
       end
 
       slices = Hash.new(0)
+      min = 0; max = 90
 
       @chat.members.each do |m|
-        slices[m.luck.floor(-1)] += 1
+        floored = m.luck.floor(-1)
+        slices[floored] += 1
+
+        min = floored if min > floored
+        max = floored if max < floored
       end
 
-      @luck_distribution = slices.map do |k, v|
+      (min..max).step(10) do |i|
+        slices[i] = 0 unless slices.include?(i)
+      end
+
+      sorted_slices = slices.to_a.sort {|a, b| a.first <=> b.first }
+
+      @luck_distribution = sorted_slices.map do |k, v|
         ["#{k.to_s} - #{(k + 9).to_s}", v]
       end
 
-      @luck_distribution.sort! {|a, b| a.second <=> b.second }
     else
       @chat = nil
     end
