@@ -39,39 +39,28 @@ namespace :braintrust_bot do
 
     bot = Telegram::Bot::Client.new(ENV['BOT_TOKEN'], ENV['BOT_NAME'])
 
-    def possessiveize(word)
-      "#{word}'s"
+    def age(user)
+      ((DateTime.now.to_date - user.birthday) / 365).to_i
     end
 
-    def sentenceize(names, at)
-      "#{names.map{ |n| possessiveize(n) }.to_sentence } #{"birthday".pluralize names.size} #{names.size == 1 ? "is" : "are"} #{at}!"
+    def today_sentence(user)
+      "#{user.display_name(true)} turns <b>#{age(user)}</b> today! Happy birthday, #{user.display_name(true)}!"
+    end
+
+    def next_week_sentence(user)
+      "#{user.display_name(true)} turns <b>#{age(user) + 1}</b> next week!"
     end
 
     Chat.where(birthdays_enabled: true).each do |chat|
-      today = []; week_from_now = []
 
       chat.members.each do |member|
         unless (birthday = member.birthday) == nil
           if birthday.day == week_from_now_date.day && birthday.month == week_from_now_date.month
-            week_from_now << "<b>#{member.display_name}</b>"
+            bot.send_message chat_id: chat.telegram_chat, text: "🎂 #{next_week_sentence(member)}".strip, parse_mode: :html
           elsif birthday.day == today_date.day && birthday.month == today_date.month
-            today << "<b>#{member.display_name}</b>"
+            bot.send_message chat_id: chat.telegram_chat, text: "🎂 #{today_sentence(member)}".strip, parse_mode: :html
           end
         end
-      end
-
-      greeting = ""
-
-      unless today.empty?
-        greeting << sentenceize(today, "today") + " "
-      end
-
-      unless week_from_now.empty?
-        greeting << sentenceize(week_from_now, "next week")
-      end
-
-      unless greeting.blank?
-        bot.send_message chat_id: chat.telegram_chat, text: "🎂 #{greeting}".strip, parse_mode: :html
       end
     end
   end
