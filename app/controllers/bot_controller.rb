@@ -39,8 +39,14 @@ class BotController < Telegram::Bot::UpdatesController
 
     # handle messages that begin with special prefixes
     if update.key?('text')
+      text = update['text']
+
+      if @user
+        Message.create! member: @user, chat: @chat, content: update['text'], telegram_message: update['message_id']
+      end
+
       PREFIXES.each do |prefix|
-        if update['text'].downcase.starts_with?(prefix)
+        if text.downcase.starts_with?(prefix)
           # pluck out the text from the update, cut out the @botusername part,
           # split it into an array (as summon would expect), and splat it for args to summon
           summon! *update['text'][prefix.length..-1].split(' ')
@@ -60,6 +66,13 @@ class BotController < Telegram::Bot::UpdatesController
       latest_quote.save
       respond_with :message, text: '🗺 A location was added to your latest quote!'
     end
+  end
+
+  def mystats!(*args)
+    messages = @user.messages.where(chat: @chat)
+
+    response = "📊 So far you've sent <b>#{messages.count}</b> #{"message".pluralize messages.count} in this chat."
+    respond_with :message, text: response, parse_mode: "html"
   end
 
   def luckstats!(*args)
@@ -408,18 +421,18 @@ class BotController < Telegram::Bot::UpdatesController
   def webpic!(*args)
     cached_response = respond_with :message, text: "🕵🏻‍♀️ Looking up a picture for you...", parse_mode: :markdown
     begin
-    photo = Unsplash::Photo.random(query: args.join(" "))
+      photo = Unsplash::Photo.random(query: args.join(" "))
 
-    # This attribution format is required by the Unsplash API.
-    # The first letter is a direct link to the photo so that telegram will load a preview.
-    # The rest is a link to the photo's "page" with other info about it.
-    caption = "[P](#{photo[:urls][:regular]})[hoto](#{photo[:links][:html]})"
-    caption << " by [#{photo[:user][:name]}](#{photo[:user][:links][:html]})"
-    caption << " on [Unsplash](https://unsplash.com)"
+      # This attribution format is required by the Unsplash API.
+      # The first letter is a direct link to the photo so that telegram will load a preview.
+      # The rest is a link to the photo's "page" with other info about it.
+      caption = "[P](#{photo[:urls][:regular]})[hoto](#{photo[:links][:html]})"
+      caption << " by [#{photo[:user][:name]}](#{photo[:user][:links][:html]})"
+      caption << " on [Unsplash](https://unsplash.com)"
 
-    bot.public_send('edit_message_text', text: caption,
-                    chat_id: cached_response['result']['chat']['id'],
-                    message_id: cached_response['result']['message_id'], parse_mode: :markdown)
+      bot.public_send('edit_message_text', text: caption,
+                      chat_id: cached_response['result']['chat']['id'],
+                      message_id: cached_response['result']['message_id'], parse_mode: :markdown)
     rescue Unsplash::Error, JSON::ParserError
       bot.public_send('edit_message_text', text: "🤷‍♀️ I couldn't find anything that matched <b>#{args.join(" ")}</b>.‍",
                       chat_id: cached_response['result']['chat']['id'],

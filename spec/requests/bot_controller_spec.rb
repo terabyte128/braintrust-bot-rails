@@ -1011,4 +1011,26 @@ RSpec.describe BotController, telegram_bot: :rails do
       )
     end
   end
+
+  describe 'message saving' do
+    it 'saves messages' do
+      dispatch_message "this is a test", create_message(1).merge(message_id: 999)
+
+      expect(Message.count).to eq 1
+
+      m = Message.first
+      expect(m.content).to eq "this is a test"
+      expect(m.telegram_message).to eq 999
+      expect(m.member).to eq Member.first
+      expect(m.chat).to eq Chat.first
+    end
+
+    it 'reports personal statistics' do
+      dispatch_message "this is a test", create_message(1).merge(message_id: 999)
+
+      expect { dispatch_command 'mystats', create_message(1) }.to(
+        send_telegram_message(bot, /1/)
+      )
+    end
+  end
 end

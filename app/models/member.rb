@@ -4,6 +4,7 @@ class Member < ApplicationRecord
   has_many :quotes
   has_many :photos
   has_many :luck_histories
+  has_many :messages
 
   validates_uniqueness_of :username, allow_blank: true, allow_nil: true, case_sensitive: false
   validates_uniqueness_of :telegram_user, allow_blank: true, allow_nil: true

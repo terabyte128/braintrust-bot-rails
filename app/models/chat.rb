@@ -8,6 +8,7 @@ class Chat < ApplicationRecord
   has_many :eight_ball_answers
   has_many :photos
   has_many :alexas
+  has_many :messages
 
   # generate a random quote from this chat
   # will use markov ONLY IF author is nil

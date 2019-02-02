@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20181025074456) do
+ActiveRecord::Schema.define(version: 20190202060601) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -102,6 +102,17 @@ ActiveRecord::Schema.define(version: 20181025074456) do
     t.date "birthday"
   end
 
+  create_table "messages", force: :cascade do |t|
+    t.bigint "chat_id"
+    t.bigint "member_id"
+    t.text "content"
+    t.integer "telegram_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chat_id"], name: "index_messages_on_chat_id"
+    t.index ["member_id"], name: "index_messages_on_member_id"
+  end
+
   create_table "photos", force: :cascade do |t|
     t.text "caption"
     t.text "telegram_photo"
@@ -131,4 +142,6 @@ ActiveRecord::Schema.define(version: 20181025074456) do
   end
 
   add_foreign_key "luck_histories", "members"
+  add_foreign_key "messages", "chats"
+  add_foreign_key "messages", "members"
 end
