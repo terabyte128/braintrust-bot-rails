@@ -939,6 +939,18 @@ RSpec.describe BotController, telegram_bot: :rails do
       )
     end
 
+    it 'generates luck randomly' do
+      dispatch_message '', create_message(1)
+
+      m = Member.first
+      expect(m).to be_truthy
+
+      100.times do
+        # just make sure this doesn't crash
+        m.update_luck_random
+      end
+    end
+
     it 'generates luck statistics link' do
       dispatch_message '', create_message(1)
 

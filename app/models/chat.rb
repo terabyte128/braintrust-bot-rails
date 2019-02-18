@@ -49,6 +49,10 @@ class Chat < ApplicationRecord
     end
   end
 
+  def average_luck
+    members.average(:luck)
+  end
+
   def display_name
     title.present? ? title : telegram_chat
   end

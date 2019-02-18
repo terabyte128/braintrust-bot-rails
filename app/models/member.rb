@@ -46,12 +46,18 @@ class Member < ApplicationRecord
 
   def update_luck_random
     date = DateTime.now
+
+
     if !birthday.nil? && birthday.day == date.day && birthday.month == date.month
       new_luck = sample_z_estimate(rand(25..40))
     elsif rand < 0.4
       new_luck = sample_random
     else
-      new_luck = sample_z_estimate
+      avg_luck = (chats.map{ |c| c.average_luck }).sum / chats.count
+
+      # weight the luck slightly by the average luck of the chat
+      diff = (avg_luck - luck) ** (2.0 / 3)
+      new_luck = sample_z_estimate(diff)
     end
 
     update_luck new_luck

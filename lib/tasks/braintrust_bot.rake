@@ -1,6 +1,7 @@
 require "#{Rails.root}/lib/helpers/application_helpers"
 include ApplicationHelpers
 require 'csv'
+require 'json'
 
 namespace :braintrust_bot do
   desc "Send a quote to all chats that request a quote every day (with 1/3 probability)"
@@ -206,6 +207,35 @@ namespace :braintrust_bot do
         # save photo locally to /images/<chat_id>/<photo_id>.<ext> (id = the id in our database, not telegram's)
         dl_image = open(url)
         IO.copy_stream(dl_image, dirname + "/#{photo.id}.#{ext}")
+      end
+    end
+  end
+
+  desc 'Import messages from Telegram'
+  task :import_telegram_messages, [:file] => [:environment] do |task, args|
+    file = File.open(args[:file])
+    data = JSON.parse(file.read)
+
+    data['chats']['list'].each do |chat|
+      puts "trying to import messages for #{chat['name']} (  #{chat['id']}  )"
+      # truncate to a 32 bit integer and negate it
+      truncated_id = chat['id'].to_s(2)[-32..-1].to_i(2) * -1
+
+      puts truncated_id
+
+      if (my_chat = Chat.find_by telegram_chat: truncated_id)
+
+        chat['messages'].each do |message|
+          if (member = Member.find_by telegram_user: message['from_id']) && message.dig('text')
+            my_chat.messages.create! member: member,
+                                     telegram_message: message['id'],
+                                     created_at: message['date'],
+                                     content: message['text']
+            puts "imported #{message['text']}"
+          end
+        end
+
+        puts "imported messages for #{chat['title']}"
       end
     end
   end

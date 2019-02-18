@@ -75,6 +75,10 @@ class BotController < Telegram::Bot::UpdatesController
     respond_with :message, text: response, parse_mode: "html"
   end
 
+  def test!
+    respond_with :message, text: update
+  end
+
   def luckstats!(*args)
     return if @user.nil?
 
