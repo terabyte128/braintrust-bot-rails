@@ -264,7 +264,7 @@ namespace :braintrust_bot do
                 my_chat.messages.create! member: member,
                                          telegram_message: message['id'],
                                          created_at: message['date'],
-                                         content: message['text']
+                                         content: flatten_text(message['text'])
               end
             else
               puts "EMPTY: skipping #{message}"
@@ -273,6 +273,36 @@ namespace :braintrust_bot do
         end
 
         puts "imported messages for #{chat['name']}"
+      end
+    end
+  end
+
+  task fix_commands: :environment do
+    Message.all.each do |m|
+      begin
+
+        parsed = eval(m.content)
+        built = ""
+
+        parsed.each do |stuff|
+          if stuff.is_a? String
+            built << stuff
+          else
+            built << stuff['text']
+          end
+        end
+
+
+        if built[0] == '/'
+          puts "Destroying #{m.content}"
+          m.destroy # do not store commands
+        else
+          puts "Replacing #{m.content} with #{built}"
+          m.update content: built
+        end
+
+      rescue Exception
+        # ignored
       end
     end
   end
