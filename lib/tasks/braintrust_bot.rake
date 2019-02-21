@@ -212,11 +212,40 @@ namespace :braintrust_bot do
   end
 
   desc 'Import messages from Telegram'
-  task :import_telegram_messages, [:file] => [:environment] do |task, args|
+  task :import_telegram_messages, [:file, :chat_id] => [:environment] do |task, args|
+
+    def flatten_text(text)
+      if text.is_a? String
+        return text
+      end
+
+      # else it's an array of stuff
+
+      built = ""
+
+      text.each do |stuff|
+        if stuff.is_a? String
+          built << stuff
+        else
+          built << stuff['text']
+        end
+      end
+
+      return built
+    end
+
+
     file = File.open(args[:file])
     data = JSON.parse(file.read)
 
+    chat_id = args[:chat_id].to_i
+
+
     data['chats']['list'].each do |chat|
+      if chat['id'] != chat_id
+        next
+      end
+
       puts "trying to import messages for #{chat['name']} (  #{chat['id']}  )"
       # truncate to a 32 bit integer and negate it
       truncated_id = chat['id'].to_s(2)[-32..-1].to_i(2) * -1
@@ -227,15 +256,23 @@ namespace :braintrust_bot do
 
         chat['messages'].each do |message|
           if (member = Member.find_by telegram_user: message['from_id']) && message.dig('text')
-            my_chat.messages.create! member: member,
-                                     telegram_message: message['id'],
-                                     created_at: message['date'],
-                                     content: message['text']
-            puts "imported #{message['text']}"
+
+            if message['text'].present?
+              if my_chat.messages.find_by(telegram_message: message['id'])
+                puts "ALREADY IMPORTED: skipping #{message}"
+              else
+                my_chat.messages.create! member: member,
+                                         telegram_message: message['id'],
+                                         created_at: message['date'],
+                                         content: message['text']
+              end
+            else
+              puts "EMPTY: skipping #{message}"
+            end
           end
         end
 
-        puts "imported messages for #{chat['title']}"
+        puts "imported messages for #{chat['name']}"
       end
     end
   end
