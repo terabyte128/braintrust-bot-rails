@@ -70,12 +70,21 @@ class BotController < Telegram::Bot::UpdatesController
 
   def mystats!(*args)
     messages = @user.messages.where(chat: @chat)
+    stats = messages.select("avg(array_length(regexp_split_to_array(\"content\", '\\s+'),1)) as avg_length",
+                            "stddev_pop(array_length(regexp_split_to_array(\"content\", '\\s+'),1)) as stdev")
+                .order('').first
+    first_message = messages.order('created_at asc').first.created_at
+    first_time = first_message.strftime("%-d %b %Y")
+    days_ago = ((Time.zone.now - first_message) / 1.day).round
 
-    response = "📊 So far you've sent <b>#{messages.count}</b> #{"message".pluralize messages.count} in this chat."
+    response = "📊 So far you've sent <b>#{messages.count}</b> #{"message".pluralize messages.count} to this chat.\n"
+    response << "Your first message was sent on <b>#{first_time}</b>, which was <b>#{days_ago}</b> days ago.\n"
+    response << "Your average message length is <b>#{stats.avg_length.round(1)}</b> words with a standard deviation of <b>#{stats.stdev.round(1)}</b> words."
+
     respond_with :message, text: response, parse_mode: "html"
   end
 
-  def test!
+  def debug!
     respond_with :message, text: update
   end
 
