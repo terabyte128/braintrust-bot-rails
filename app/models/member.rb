@@ -57,7 +57,7 @@ class Member < ApplicationRecord
 
       if rand < 0.32274
         # weight the luck slightly by the average luck of the chat
-        diff = (avg_luck - luck) ** (2.0 / 3)
+        diff = (avg_luck - luck).abs ** (2.0 / 3)
 
         if rand < 0.5
           diff *= -1
