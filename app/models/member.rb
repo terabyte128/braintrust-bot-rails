@@ -53,20 +53,7 @@ class Member < ApplicationRecord
     elsif rand < 0.4
       new_luck = sample_random
     else
-      avg_luck = (chats.map{ |c| c.average_luck }).sum / chats.count
-
-      if rand < 0.32274
-        # weight the luck slightly by the average luck of the chat
-        diff = (avg_luck - luck).abs ** (2.0 / 3)
-
-        if rand < 0.5
-          diff *= -1
-        end
-
-        new_luck = sample_z_estimate(diff)
-      else
-        new_luck = sample_z_estimate
-      end
+      new_luck = sample_z_estimate
     end
 
     update_luck new_luck
