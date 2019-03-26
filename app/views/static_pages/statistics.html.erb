@@ -37,10 +37,12 @@
     <div class="row">
       <div class="col-md">
         <h5>Messages By Sender</h5>
-        <%= column_chart @chat.quotes.where.not(member: nil)
+        <%= column_chart @chat.messages
                              .group(:member).count
                              .sort {|a, b| b.second <=> a.second}
-                             .map {|x| [x.first.display_name, (x.second * 100.0 / @chat.quotes.where.not(member: nil).count).round(1)] }
+                             .map {|x| [x.first.display_name, x.second] },
+                         xtitle: "Member",
+                         ytitle: "Total Messages Sent"
 
         %>
       </div>
