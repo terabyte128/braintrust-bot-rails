@@ -590,6 +590,13 @@ RSpec.describe BotController, telegram_bot: :rails do
       dispatch_command "gq", create_message(2)
       expect(Quote.first.times_accessed).to eq 1
     end
+
+    it 'filters quotes by author name when given as an argument to sendquote' do
+      dispatch_command "sq testquote && sender", create_message(2)
+      expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /Testquote/)
+      expect { dispatch_command 'getquote boop', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
+      expect { dispatch_command 'getquote sender', create_message(1) }.to send_telegram_message(bot, /Testquote/)
+    end
   end
 
   describe 'sending photos' do

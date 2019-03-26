@@ -45,7 +45,13 @@ class Chat < ApplicationRecord
         quotes = self.quotes
       end
 
-      self.quotes.where(enabled: true).sample.increment! :times_accessed
+      sample = quotes.where(enabled: true).sample
+
+      unless sample.nil?
+        sample.increment! :times_accessed
+      end
+
+      sample
     end
   end
 
