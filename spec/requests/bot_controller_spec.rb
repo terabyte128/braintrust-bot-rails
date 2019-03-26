@@ -566,6 +566,17 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
     end
 
+    it 'ignores disabled quotes' do
+      dispatch_command "sq testquote && sender", create_message(2)
+      expect(Quote.all.size).to eq 1
+      expect(Quote.first.enabled).to be true
+      expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /Testquote/)
+      Quote.first.update enabled: false
+      expect(Quote.first.enabled).to be false
+
+      expect { dispatch_command 'getquote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
+    end
+
     it 'works with /quote command when given no arguments' do
       expect { dispatch_command 'quote', create_message(1) }.to send_telegram_message(bot, /don't have any quotes/)
     end

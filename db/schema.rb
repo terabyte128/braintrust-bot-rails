@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190202060601) do
+ActiveRecord::Schema.define(version: 20190326040540) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -137,6 +137,7 @@ ActiveRecord::Schema.define(version: 20190202060601) do
     t.boolean "location_confirmed", default: false
     t.integer "member_id"
     t.integer "times_accessed", default: 0
+    t.boolean "enabled", default: true
     t.index ["chat_id"], name: "index_quotes_on_chat_id"
     t.index ["member_id"], name: "index_quotes_on_member_id"
   end

@@ -14,7 +14,7 @@ class Chat < ApplicationRecord
   # will use markov ONLY IF author is nil
   # and use_markov is set. Returns nil if no quotes were found
   def random_quote(use_markov, author)
-    if self.quotes.empty?
+    if self.quotes.where(enabled: true).empty?
       return nil
     end
 
@@ -45,7 +45,7 @@ class Chat < ApplicationRecord
         quotes = self.quotes
       end
 
-      self.quotes.sample.increment! :times_accessed
+      self.quotes.where(enabled: true).sample.increment! :times_accessed
     end
   end
 

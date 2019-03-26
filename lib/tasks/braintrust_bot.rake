@@ -13,7 +13,7 @@ namespace :braintrust_bot do
 
     Chat.where(quotes_enabled: true).each do |chat|
       if dice.sample
-        quote = chat.quotes.sample
+        quote = chat.quotes.where(enabled: true).sample
 
         unless quote.nil?
           quote.increment! :times_accessed
