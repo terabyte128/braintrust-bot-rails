@@ -58,10 +58,10 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'activeadmin', '~> 1.3.0'
 gem 'telegram-bot', '~> 0.14.0'
-gem 'devise', '~> 4.4.3'
+gem 'devise', '~> 4.6.0'
 gem 'marky_markov', '~> 0.3.5'
 gem 'chartkick'
-gem 'bootstrap', '~> 4.1.2'
+gem 'bootstrap', '~> 4.3.1'
 gem 'jquery-rails'
 gem 'groupdate'
 gem 'unsplash'
