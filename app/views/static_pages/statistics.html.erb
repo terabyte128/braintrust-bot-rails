@@ -22,6 +22,31 @@
     </div>
     <div class="row">
       <div class="col-md">
+        <h5>Message History</h5>
+        <%= line_chart [
+                           {
+                               name: 'Messages',
+                               data: @chat.messages
+                                   .group_by_month(:created_at, format: "%b %Y")
+                                   .count.to_a
+                           },
+                       ],
+                       xtitle: 'Month', ytitle: 'Number Submitted' %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
+        <h5>Messages By Sender</h5>
+        <%= column_chart @chat.quotes.where.not(member: nil)
+                             .group(:member).count
+                             .sort {|a, b| b.second <=> a.second}
+                             .map {|x| [x.first.display_name, (x.second * 100.0 / @chat.quotes.where.not(member: nil).count).round(1)] }
+
+        %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md">
         <h5>Quotes & Photos By Sender</h5>
         <%= column_chart [
                              {

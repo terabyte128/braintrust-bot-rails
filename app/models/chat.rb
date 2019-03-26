@@ -32,7 +32,7 @@ class Chat < ApplicationRecord
         author = self.quotes.sample.author
 
         Quote.new(
-            content: markov.generate_n_words(rand(8..16)),
+            content: markov.generate_n_words(rand(5..10)),
             author: author,
             context: "probably",
             created_at: Date.new(2000 + rand(16..18), 1, 1)
