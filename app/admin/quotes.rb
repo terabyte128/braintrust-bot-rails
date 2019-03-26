@@ -12,7 +12,7 @@ ActiveAdmin.register Quote do
 #   permitted
 # end
 
-  permit_params :chat_id, :content, :context, :author, :sender, :longitude, :latitude, :enabled
+  permit_params :chat_id, :content, :context, :author, :member_id, :longitude, :latitude, :enabled
 
 
 end

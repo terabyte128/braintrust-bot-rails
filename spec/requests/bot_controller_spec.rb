@@ -497,6 +497,8 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect { dispatch_command 'sq', message }.to( send_telegram_message(bot, /Your quote was saved/) )
       expect(Quote.first.content).to eq 'something memorable'
       expect(Quote.first.author.downcase).to eq 'user2'
+      expect(Quote.first.member).not_to be nil?
+      expect(Quote.first.member.username).to eq 'user1'
     end
 
     it 'saves reply quotes with first names' do

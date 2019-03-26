@@ -190,7 +190,7 @@ class BotController < Telegram::Bot::UpdatesController
     # the sender wants to save a quote sent in the chat by someone else
     if update.dig('message', 'reply_to_message')
       original_message = update['message']['reply_to_message']
-      new_quote = @chat.quotes.new content: original_message['text']
+      new_quote = @chat.quotes.new content: original_message['text'], member: @user
 
       if original_message['from']['first_name']
         new_quote.author = original_message['from']['first_name']
