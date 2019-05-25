@@ -88,21 +88,30 @@ class BotController < Telegram::Bot::UpdatesController
     respond_with :message, text: update
   end
 
+  def whoami!
+    respond_with :message, text: @user.html_link, parse_mode: :html
+  end
+
   def luckstats!(*args)
     return if @user.nil?
 
-    if args.size != 1
+    if args.size > 1
       respond_with :message, text: "😈 Usage: /luckstats [username]"
       return
     end
 
-    if (target = @chat.members.find_by_username(strip_leading_at(args[0]).downcase))
-      path = Rails.application.routes.url_helpers.chat_statistics_url(chat_id: @chat.id, member: target.id)
-      response = "🔗 <a href=\"#{path}#luck\">Luck Statistics for #{target.display_name(false)}</a>"
-      respond_with :message, text: response, parse_mode: :html
+    if args.size == 1
+      unless (target = @chat.members.find_by_username(strip_leading_at(args[0]).downcase))
+        respond_with :message, text: "🤷‍♂️ That user doesn't exist in this chat!"
+        return
+      end
     else
-      respond_with :message, text: "🤷‍♂️ That user doesn't exist in this chat!"
+      target = @user
     end
+
+    path = Rails.application.routes.url_helpers.chat_statistics_url(chat_id: @chat.id, member: target.id)
+    response = "🔗 <a href=\"#{path}#luck\">Luck Statistics for #{target.display_name(false)}</a>"
+    respond_with :message, text: response, parse_mode: :html
   end
 
   def chatstats!(*args)
@@ -539,8 +548,8 @@ class BotController < Telegram::Bot::UpdatesController
 
     # update their username and first/last names because we know their ID (always stay up to date!)
     @user.username = from['username'].downcase if from['username'].present?
-    @user.first_name = from['first_name'] if from['first_name'].present?
-    @user.last_name = from['last_name'] if from['last_name'].present?
+    @user.first_name =  from['first_name'].present? ? from['first_name'] : ''
+    @user.last_name = from['last_name'].present? ? from['last_name'] : ''
 
     # add new members automatically
     unless @user.chats.exists?(@chat.id)

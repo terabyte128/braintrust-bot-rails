@@ -987,6 +987,11 @@ RSpec.describe BotController, telegram_bot: :rails do
       expect { dispatch_command 'luckstats user1', create_message(1) }.to(
           send_telegram_message(bot, /#luck/)
       )
+
+      # should respond with current user's luck by default
+      expect { dispatch_command 'luckstats', create_message(1) }.to(
+           send_telegram_message(bot, Regexp.new(m.id.to_s))
+      )
     end
 
     it 'responds to nonexistent users' do
@@ -994,12 +999,6 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       expect { dispatch_command 'luckstats user3', create_message(1) }.to(
           send_telegram_message(bot, /doesn't exist/)
-      )
-    end
-
-    it 'responds to badly formatted commands' do
-      expect { dispatch_command 'luckstats', create_message(1) }.to(
-          send_telegram_message(bot, /Usage/)
       )
     end
   end
