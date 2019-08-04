@@ -63,7 +63,7 @@ GEM
       sassc-rails (>= 2.0.0)
     builder (3.2.3)
     byebug (11.0.1)
-    chartkick (3.0.2)
+    chartkick (3.2.1)
     coffee-rails (4.2.2)
       coffee-script (>= 2.2.0)
       railties (>= 4.0.0)
@@ -285,7 +285,7 @@ DEPENDENCIES
   activeadmin (~> 1.3.0)
   bootstrap (~> 4.3.1)
   byebug
-  chartkick
+  chartkick (>= 3.2.0)
   coffee-rails (~> 4.2)
   devise (~> 4.6.0)
   groupdate
