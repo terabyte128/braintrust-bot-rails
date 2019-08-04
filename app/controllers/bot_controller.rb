@@ -462,6 +462,10 @@ class BotController < Telegram::Bot::UpdatesController
     end
   end
 
+  def test!
+    respond_with :message, text: "```#{update}```", parse_mode: :markdown
+  end
+
 
   private
 

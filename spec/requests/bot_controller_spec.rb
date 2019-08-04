@@ -287,6 +287,25 @@ RSpec.describe BotController, telegram_bot: :rails do
 
       expect(Chat.second.members.first).to eq(Chat.first.members.first)
     end
+
+    it 'updates names' do
+      m = create_message 1
+      m[:from][:first_name] = "firsty"
+      m[:from][:last_name] = "lasty"
+
+      dispatch_message 'hello, world', m
+
+      expect(Member.first.first_name).to eq("firsty")
+      expect(Member.first.last_name).to eq("lasty")
+
+      m[:from][:first_name] = "beep"
+      m[:from][:last_name] = "boop"
+
+      dispatch_message 'blop', m
+
+      expect(Member.first.first_name).to eq("beep")
+      expect(Member.first.last_name).to eq("boop")
+    end
   end
 
   describe 'summoning' do
