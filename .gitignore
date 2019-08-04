@@ -23,8 +23,7 @@
 .byebug_history
 
 # ignore some .idea files
-**/.idea/workspace.xml
-**/.idea/tasks.xml
+.idea/
 
 # ignore all the telegram images but keep the .keep file
 telegram_images/*
