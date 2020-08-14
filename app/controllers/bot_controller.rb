@@ -300,7 +300,7 @@ class BotController < Telegram::Bot::UpdatesController
     end
 
     chat_members.in_groups_of(SUMMON_GROUP_SIZE, false).each do |group|
-      respond_with :message, text: group.join(", ")
+      respond_with :message, text: group.join(", "), parse_mode: :html
     end
 
     respond_with :message, text: announcement, parse_mode: :html

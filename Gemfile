@@ -8,9 +8,9 @@ end
 ruby '2.5.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.1.6'
+gem 'rails', '~> 5.2.4.3'
 # Use Puma as the app server
-gem 'puma', '~> 3.7'
+gem 'puma', '~> 3.12.4'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -60,7 +60,7 @@ gem 'activeadmin', '~> 1.3.0'
 gem 'telegram-bot', '~> 0.14.0'
 gem 'devise', '~> 4.7.1'
 gem 'marky_markov', '~> 0.3.5'
-gem 'chartkick', '>= 3.2.0'
+gem 'chartkick', '>= 3.4.0'
 gem 'bootstrap', '~> 4.3.1'
 gem 'jquery-rails'
 gem 'groupdate'

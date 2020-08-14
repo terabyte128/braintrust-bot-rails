@@ -31,3 +31,6 @@ telegram_images/*
 
 .DS_Store
 spec/examples.txt
+
+# ignore dependencies
+vendor/bundle
