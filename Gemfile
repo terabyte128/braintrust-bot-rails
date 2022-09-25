@@ -8,13 +8,13 @@ end
 ruby '2.5.9'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.2.6'
+gem 'rails', '~> 5.2.8.1'
 # Use Puma as the app server
 gem 'puma', '~> 4.3.12'
 # Use SCSS for stylesheets
-gem 'sass-rails', '~> 5.0'
+gem 'sass-rails', '~> 5.1'
 # Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier', '>= 2.0.0'
 # See https://github.com/rails/execjs#readme for more supported runtimes
 # gem 'therubyracer', platforms: :ruby
 
@@ -60,7 +60,7 @@ gem 'activeadmin', '~> 1.3.0'
 gem 'telegram-bot', '~> 0.14.0'
 gem 'devise', '~> 4.7.1'
 gem 'marky_markov', '~> 0.3.5'
-gem 'chartkick', '>= 3.4.0'
+gem 'chartkick', '>= 3.4.2'
 gem 'bootstrap', '~> 4.3.1'
 gem 'jquery-rails'
 gem 'groupdate'
