@@ -2,7 +2,6 @@
   "name": "braintrust-bot-rails",
   "private": true,
   "dependencies": {
-    "chart.js": "^2.9.4",
-    "chartkick": "^2.3.6"
+    "chartkick": "~> 3.2.1"
   }
 }
