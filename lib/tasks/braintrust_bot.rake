@@ -41,7 +41,7 @@ namespace :braintrust_bot do
     bot = Telegram::Bot::Client.new(ENV['BOT_TOKEN'], ENV['BOT_NAME'])
 
     def age(user)
-      ((DateTime.now.to_date - user.birthday) / 365).to_i
+      ((DateTime.now.to_date - user.birthday) / 365.25).to_i
     end
 
     def today_sentence(user)
