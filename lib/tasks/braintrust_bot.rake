@@ -49,7 +49,7 @@ namespace :braintrust_bot do
     end
 
     def next_week_sentence(user)
-      "#{user.display_name(true)} turns <b>#{age(user)}</b> next week!"
+      "#{user.display_name(true)} turns <b>#{age(user) + 1}</b> next week!"
     end
 
     Chat.where(birthdays_enabled: true).each do |chat|
